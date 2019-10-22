@@ -111,5 +111,16 @@ public class AI : MonoBehaviour
         // Run your AI code in here
 
         actions.MoveToEnemyside(_agentActions, EnemyBase);
+
+
+
+        if(gameObject.name == "Red Team Member 1"  || gameObject.name == "Blue Team Member 1")
+        {
+           
+            actions.PickUpFlag(_agentSenses);
+        }
+       
+
+
     }
 }
