@@ -88,6 +88,10 @@ public class AI : MonoBehaviour
     // e.g. agentScript.MoveTo(enemy);
     private AgentActions _agentActions;
 
+    private Actions actions;
+
+    public GameObject EnemyBase;
+
 
     // Use this for initialization
     void Start ()
@@ -97,11 +101,15 @@ public class AI : MonoBehaviour
         _agentActions = GetComponent<AgentActions>();
         _agentSenses = GetComponentInChildren<Sensing>();
         _agentInventory = GetComponentInChildren<InventoryController>();
+
+        actions = GetComponent<Actions>();
     }
 
     // Update is called once per frame
     void Update ()
     {
         // Run your AI code in here
+
+        actions.MoveToEnemyside(_agentActions, EnemyBase);
     }
 }
