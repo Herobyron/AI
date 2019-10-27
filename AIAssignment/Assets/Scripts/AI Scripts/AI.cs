@@ -110,17 +110,32 @@ public class AI : MonoBehaviour
     {
         // Run your AI code in here
 
-        actions.MoveToEnemyside(_agentActions, EnemyBase);
+        
 
+        
+        if(_agentSenses.GetEnemiesInView().Count >= 1)
+        {
+            _agentActions.PauseMovement();
+            actions.Attack(_agentSenses, _agentActions);
+            // need a way to cancel movement
 
+        }
+        else
+        {
+            actions.MoveToEnemyside(_agentActions, EnemyBase);
+        }
+        
 
         if(gameObject.name == "Red Team Member 1"  || gameObject.name == "Blue Team Member 1")
         {
            
-            actions.PickUpFlag(_agentSenses);
+            actions.PickUpFlag(_agentSenses, _agentActions);
         }
-       
 
+        if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
+        {
+            actions.Fleeing(_agentActions);
+        }
 
     }
 }

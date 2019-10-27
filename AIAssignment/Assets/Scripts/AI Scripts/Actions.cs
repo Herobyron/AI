@@ -16,43 +16,46 @@ public class Actions : MonoBehaviour
     }
 
 
+
     // need to change this so that it picks up due to collision 
     // or onhly when they can see it.
-    public bool PickUpFlag(Sensing sight)
+    public bool PickUpFlag(Sensing sight, AgentActions actions)
     {
-         // sight.GetObjectsInViewByTag("Flag");
-        //sight.GetObjectsInViewByTag("Flag");
          List<GameObject> temp = new List<GameObject>();
-        
-
+      
         foreach (GameObject g in sight.GetObjectsInViewByTag("Flag"))
         {
             temp.Add(g);
         }
-
 
         for(int i = 0; i < temp.Count; ++i)
         {
             Debug.Log("flag has been found");
             Debug.Log(temp.Count);
 
-            if(temp[i].name == "Red Flag")
+            if(temp[i].name == "Red Flag") //checks to make sure the item within range is the red flag
             {
                 Debug.Log("red flag in contents");
 
                 if (this.gameObject.CompareTag("Blue Team"))
                 {
-                    temp[i].GetComponent<Flag>().Collect(this.gameObject.GetComponent<AgentData>());
+                    //when the Ai is within view distance
+                    actions.MoveTo(temp[i]);
+                    // then it collects the item
+                    actions.CollectItem(temp[i]);
                 }
             }
-            else if(temp[i].name == "Blue Flag")
+            else if (temp[i].name == "Blue Flag") //checks to make sure the item within range is the blue flag
             {
                 Debug.Log("blue flag in contents");
-
+                
                 if (this.gameObject.CompareTag("Red Team"))
                 {
-
-                    temp[i].GetComponent<Flag>().Collect(this.gameObject.GetComponent<AgentData>());
+                    //when the Ai is within view distance
+                    actions.MoveTo(temp[i]);
+                    // then it collects the item
+                    actions.CollectItem(temp[i]);
+                    
                 }
             }
             
@@ -62,20 +65,38 @@ public class Actions : MonoBehaviour
         return true;
     }
 
-    public static bool Attack()
+    public  void Attack(Sensing view, AgentActions action)
     {
-        return true;
+        //first see if an enemy comes into view
+       foreach(GameObject G in view.GetEnemiesInView())
+       {
+            action.ResumeMovement();
+            action.MoveTo(G);
+            this.GetComponent<AgentActions>().AttackEnemy(G);
+       }
+
+       //need to resume movement when enemyes are dead
+        //action.ResumeMovement();
+        
     }
 
-    public static bool Fleeing()
+    public bool Fleeing(AgentActions actions)
     {
+        //actions.MoveTo(FriendlySide);
+        if(this.gameObject.CompareTag("Blue Team"))
+        {
+            actions.MoveTo(GameObject.FindGameObjectWithTag("BlueRetreatZone"));
+        }
+        else if(this.gameObject.CompareTag("Red Team"))
+        {
+            actions.MoveTo(GameObject.FindGameObjectWithTag("RedRetreatZone"));
+        }
         return true;
     }
 
     public bool MoveToEnemyside(AgentActions actions, GameObject enemybase)
     {
         actions.MoveTo(enemybase);
-
 
         return true;
     }

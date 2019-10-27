@@ -79,6 +79,16 @@ public class AgentActions : MonoBehaviour
         return false;
     }
 
+    public void PauseMovement()
+    {
+        _navAgent.isStopped = true;
+    }
+
+    public void ResumeMovement()
+    {
+        _navAgent.isStopped = false; 
+    }
+
     /// <summary>
     /// Move towards a target location
     /// </summary>
