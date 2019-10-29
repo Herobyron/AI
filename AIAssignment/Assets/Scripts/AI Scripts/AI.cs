@@ -91,7 +91,7 @@ public class AI : MonoBehaviour
     private Actions actions;
 
     public GameObject EnemyBase;
-
+    public GameObject HomeBase;
 
     // Use this for initialization
     void Start ()
@@ -115,9 +115,8 @@ public class AI : MonoBehaviour
         
         if(_agentSenses.GetEnemiesInView().Count >= 1)
         {
-            _agentActions.PauseMovement();
-            actions.Attack(_agentSenses, _agentActions);
-            // need a way to cancel movement
+           // _agentActions.PauseMovement();
+           // actions.Attack(_agentSenses, _agentActions);
 
         }
         else
@@ -126,16 +125,20 @@ public class AI : MonoBehaviour
         }
         
 
-        if(gameObject.name == "Red Team Member 1"  || gameObject.name == "Blue Team Member 1")
+        if(_agentSenses.GetObjectsInViewByTag("Flag").Count >= 1)
         {
-           
             actions.PickUpFlag(_agentSenses, _agentActions);
         }
 
-        if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
-        {
-            actions.Fleeing(_agentActions);
-        }
+       if(_agentInventory.HasItem("Red Flag") || _agentInventory.HasItem("Blue Flag"))
+       {
+            actions.MoveHome(_agentActions, HomeBase);
+       }
+
+       // if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
+       // {
+       //     actions.Fleeing(_agentActions);
+       // }
 
     }
 }

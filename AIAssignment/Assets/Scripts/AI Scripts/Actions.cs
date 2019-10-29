@@ -101,4 +101,11 @@ public class Actions : MonoBehaviour
         return true;
     }
 
+    public bool MoveHome(AgentActions actions, GameObject HomeBase )
+    {
+        actions.MoveTo(HomeBase);
+
+        return true;
+    }
+
 }
