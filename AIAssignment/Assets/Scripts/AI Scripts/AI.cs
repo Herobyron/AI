@@ -93,6 +93,8 @@ public class AI : MonoBehaviour
     public GameObject EnemyBase;
     public GameObject HomeBase;
 
+    public bool Retreated;
+
     // Use this for initialization
     void Start ()
     {
@@ -103,6 +105,8 @@ public class AI : MonoBehaviour
         _agentInventory = GetComponentInChildren<InventoryController>();
 
         actions = GetComponent<Actions>();
+
+        Retreated = false;
     }
 
     // Update is called once per frame
@@ -115,9 +119,18 @@ public class AI : MonoBehaviour
         
         if(_agentSenses.GetEnemiesInView().Count >= 1)
         {
-           // _agentActions.PauseMovement();
-           // actions.Attack(_agentSenses, _agentActions);
+            _agentActions.PauseMovement();
+            actions.Attack(_agentSenses, _agentActions);
 
+        }
+        else if(_agentData.CurrentHitPoints <= 15)
+        {
+            
+            actions.LowHealth(_agentData, _agentActions, _agentSenses, Retreated);
+            if(Retreated)
+            {
+                actions.FindHealthKit(_agentActions, _agentSenses, _agentData);
+            }
         }
         else
         {
@@ -134,6 +147,12 @@ public class AI : MonoBehaviour
        {
             actions.MoveHome(_agentActions, HomeBase);
        }
+
+       if(gameObject.transform.position == GameObject.FindGameObjectWithTag("BlueRetreatZone").transform.position || gameObject.transform.position == GameObject.FindGameObjectWithTag("RedRetreatZone").transform.position)
+        {
+            actions.FindHealthKit(_agentActions, _agentSenses, _agentData);
+        }
+       
 
        // if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
        // {

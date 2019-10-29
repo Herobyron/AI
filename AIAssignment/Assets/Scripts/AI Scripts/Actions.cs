@@ -15,7 +15,62 @@ public class Actions : MonoBehaviour
         return true;
     }
 
+    public bool LowHealth(AgentData data, AgentActions actions, Sensing sensing, bool Retreated)
+    {
+        if(data.CurrentHitPoints < 15)
+        { 
+            if(sensing.GetEnemiesInView().Count == 0)
+            {
+                Fleeing(actions, Retreated);
+                return true;
+            }
 
+            
+        }
+        return false;
+    }
+
+    public bool FindHealthKit(AgentActions actions, Sensing sensing, AgentData data)
+    {
+        
+        //actions.PauseMovement();
+
+       if(sensing.GetCollectablesInView().Count >= 1)
+       {
+            // need to make this so that it only uses move to random once so it can actually move
+
+            List<GameObject> objects = sensing.GetCollectablesInView();
+
+            for (int i = 0; i < objects.Count; i++)
+            {
+                
+                if (objects[i].name == "Health Kit")
+                {
+                    if(sensing.IsItemInReach(objects[i]))
+                    {
+                        objects[i].GetComponent<HealthKit>().Use(data);
+                    }
+                    else
+                    {
+                        actions.MoveTo(objects[i]);
+                    }
+                }
+                else
+                {
+                    actions.MoveToRandomLocation();
+                }
+            }
+       }
+       else
+       {
+            actions.MoveToRandomLocation();
+        }
+
+
+        
+
+        return true;
+    }
 
     // need to change this so that it picks up due to collision 
     // or onhly when they can see it.
@@ -80,18 +135,22 @@ public class Actions : MonoBehaviour
         
     }
 
-    public bool Fleeing(AgentActions actions)
+    public bool Fleeing(AgentActions actions, bool retreated)
     {
-        //actions.MoveTo(FriendlySide);
-        if(this.gameObject.CompareTag("Blue Team"))
+        if(!retreated)
         {
-            actions.MoveTo(GameObject.FindGameObjectWithTag("BlueRetreatZone"));
-        }
-        else if(this.gameObject.CompareTag("Red Team"))
-        {
-            actions.MoveTo(GameObject.FindGameObjectWithTag("RedRetreatZone"));
+            if (this.gameObject.CompareTag("Blue Team"))
+            {
+                actions.MoveTo(GameObject.FindGameObjectWithTag("BlueRetreatZone"));
+            }
+            else if (this.gameObject.CompareTag("Red Team"))
+            {
+                actions.MoveTo(GameObject.FindGameObjectWithTag("RedRetreatZone"));
+            }
+            
         }
         return true;
+
     }
 
     public bool MoveToEnemyside(AgentActions actions, GameObject enemybase)
@@ -107,5 +166,8 @@ public class Actions : MonoBehaviour
 
         return true;
     }
+
+
+
 
 }
