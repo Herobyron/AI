@@ -95,6 +95,10 @@ public class AI : MonoBehaviour
 
     public bool Retreated;
 
+    public enum AIGoals {CaptureFlag, retreat, attack };
+
+
+
     // Use this for initialization
     void Start ()
     {
