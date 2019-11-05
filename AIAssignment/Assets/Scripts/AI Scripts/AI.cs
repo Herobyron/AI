@@ -76,6 +76,11 @@ using UnityEngine;
 ///
 /// See the assessment brief for more details
 /// </summary>
+/// 
+
+public enum AIGoals { CaptureFlag, retreat, attack };
+
+
 public class AI : MonoBehaviour
 {
     // Gives access to important data about the AI agent (see above)
@@ -95,7 +100,10 @@ public class AI : MonoBehaviour
 
     public bool Retreated;
 
-    public enum AIGoals {CaptureFlag, retreat, attack };
+    private void Awake()
+    {
+        Goals GoToEnemyBase = new Goals(AIGoals.CaptureFlag, 0, _agentData.MaxHitPoints, _agentData.CurrentHitPoints, GoalValuefunction.Linear);
+    }
 
 
 

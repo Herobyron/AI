@@ -10,9 +10,12 @@ public class GoalValuefunction
 
     // return the linear utility value of the goal 
     // as the values to complete the goal increases the utility incerases lineraly.
-    public float Linear(float LowerGoalRange, float HighGoalRange, float Value)
+    public static float Linear(float LowerGoalRange, float HighGoalRange, float Value)
     {
         return LowerGoalRange + (HighGoalRange - LowerGoalRange) * ((Value - LowerGoalRange) / (HighGoalRange - LowerGoalRange));
     }
 
 }
+
+// the utility function to calculate the value of the goal 
+public delegate float GoalValuefunctions(float LowerGoalRange, float HigherGoalRange, float val);

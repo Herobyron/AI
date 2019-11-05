@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 public class Goals 
 {
     // the minimum value needed to start the goal
@@ -14,13 +16,23 @@ public class Goals
     // private float value;
     private float value;
 
-    // the utility function to calculate the value of the goal 
-    //public delegate float GoalValuefunction UtilityFunctions();
+    GoalValuefunctions UtilityFunction;
 
+    AIGoals goaltype;
 
     // the goal to achieve
-    public Goals()
+    public Goals(AIGoals type, float goalvaluemin, float goalvaluemax, float currentvalue, GoalValuefunctions utilityfunction)
     {
+        goaltype = type;
+        MinimumGoalValue = goalvaluemin;
+        MaximumGoalValue = goalvaluemax;
 
+        value = currentvalue;
+        UtilityFunction = utilityfunction;
     }
+
+
+
+
+
 }
