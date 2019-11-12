@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Actions : MonoBehaviour
+public class Actions
 {
     // these will be the actions that the AI can execute
     //actions return true or false to determine wether they have finished exectuing. for example you dont want the attcaker to hit once then just stop. it needs to loop until enemy is dead
-    
-
-
 
     public static bool Gaurd()
     {
@@ -21,7 +18,7 @@ public class Actions : MonoBehaviour
         { 
             if(sensing.GetEnemiesInView().Count == 0)
             {
-                Fleeing(actions, Retreated);
+                Fleeing(actions, Retreated, data);
                 return true;
             }
 
@@ -72,9 +69,7 @@ public class Actions : MonoBehaviour
         return true;
     }
 
-    // need to change this so that it picks up due to collision 
-    // or onhly when they can see it.
-    public bool PickUpFlag(Sensing sight, AgentActions actions)
+    public bool PickUpFlag(Sensing sight, AgentActions actions, AgentData data)
     {
          List<GameObject> temp = new List<GameObject>();
       
@@ -92,7 +87,7 @@ public class Actions : MonoBehaviour
             {
                 Debug.Log("red flag in contents");
 
-                if (this.gameObject.CompareTag("Blue Team"))
+                if (data.FriendlyTeamTag == Tags.BlueTeam)
                 {
                     //when the Ai is within view distance
                     actions.MoveTo(temp[i]);
@@ -104,7 +99,7 @@ public class Actions : MonoBehaviour
             {
                 Debug.Log("blue flag in contents");
                 
-                if (this.gameObject.CompareTag("Red Team"))
+                if (data.FriendlyTeamTag == Tags.RedTeam)
                 {
                     //when the Ai is within view distance
                     actions.MoveTo(temp[i]);
@@ -127,7 +122,8 @@ public class Actions : MonoBehaviour
        {
             action.ResumeMovement();
             action.MoveTo(G);
-            this.GetComponent<AgentActions>().AttackEnemy(G);
+            action.AttackEnemy(G);
+            //this.GetComponent<AgentActions>().AttackEnemy(G);
        }
 
        //need to resume movement when enemyes are dead
@@ -135,15 +131,15 @@ public class Actions : MonoBehaviour
         
     }
 
-    public bool Fleeing(AgentActions actions, bool retreated)
+    public bool Fleeing(AgentActions actions, bool retreated, AgentData data)
     {
         if(!retreated)
         {
-            if (this.gameObject.CompareTag("Blue Team"))
+            if (data.FriendlyTeamTag == Tags.BlueTeam)
             {
                 actions.MoveTo(GameObject.FindGameObjectWithTag("BlueRetreatZone"));
             }
-            else if (this.gameObject.CompareTag("Red Team"))
+            else if (data.FriendlyTeamTag == Tags.RedTeam)
             {
                 actions.MoveTo(GameObject.FindGameObjectWithTag("RedRetreatZone"));
             }
@@ -167,6 +163,37 @@ public class Actions : MonoBehaviour
         return true;
     }
 
+
+
+
+}
+
+public class TheAction
+{
+    // has the action been completed
+    private bool Complete = false;
+
+    // can the action be interupted
+    private bool Interupt = false;
+
+    
+
+}
+
+
+public class ActionSequence : TheAction
+{
+    // list of actions for the Ai to complete
+    private List<Actions> actionlist = new List<Actions>();
+
+    // the current action it is on
+    private int ActionNumber = 0;
+
+    //constructor
+    public ActionSequence()
+    {
+
+    }
 
 
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// this is used to determine how sueful this goal is going to be inorder to satisfy the AI needs so used to help pick which set of actions to complete
+// this is used to determine how useful this goal is going to be inorder to satisfy the AI needs so used to help pick which set of actions to complete
 public class GoalValuefunction 
 {
     private float LowerUtilityGoalRange = 0.0f;
@@ -16,6 +16,3 @@ public class GoalValuefunction
     }
 
 }
-
-// the utility function to calculate the value of the goal 
-public delegate float GoalValuefunctions(float LowerGoalRange, float HigherGoalRange, float val);

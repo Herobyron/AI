@@ -93,7 +93,7 @@ public class AI : MonoBehaviour
     // e.g. agentScript.MoveTo(enemy);
     private AgentActions _agentActions;
 
-    private Actions actions;
+    //private Actions actions;
 
     public GameObject EnemyBase;
     public GameObject HomeBase;
@@ -102,10 +102,10 @@ public class AI : MonoBehaviour
 
     private void Awake()
     {
-        Goals GoToEnemyBase = new Goals(AIGoals.CaptureFlag, 0, _agentData.MaxHitPoints, _agentData.CurrentHitPoints, GoalValuefunction.Linear);
+        //Goals GoToEnemyBase = new Goals(AIGoals.CaptureFlag, 0, _agentData.MaxHitPoints, _agentData.CurrentHitPoints, GoalValuefunction.Linear);
     }
 
-
+    Actions Actions = new Actions();
 
     // Use this for initialization
     void Start ()
@@ -116,7 +116,7 @@ public class AI : MonoBehaviour
         _agentSenses = GetComponentInChildren<Sensing>();
         _agentInventory = GetComponentInChildren<InventoryController>();
 
-        actions = GetComponent<Actions>();
+        //actions = GetComponent<Actions>();
 
         Retreated = false;
     }
@@ -132,37 +132,37 @@ public class AI : MonoBehaviour
         if(_agentSenses.GetEnemiesInView().Count >= 1)
         {
             _agentActions.PauseMovement();
-            actions.Attack(_agentSenses, _agentActions);
+            Actions.Attack(_agentSenses, _agentActions);
 
         }
         else if(_agentData.CurrentHitPoints <= 15)
         {
             
-            actions.LowHealth(_agentData, _agentActions, _agentSenses, Retreated);
+            Actions.LowHealth(_agentData, _agentActions, _agentSenses, Retreated);
             if(Retreated)
             {
-                actions.FindHealthKit(_agentActions, _agentSenses, _agentData);
+                Actions.FindHealthKit(_agentActions, _agentSenses, _agentData);
             }
         }
         else
         {
-            actions.MoveToEnemyside(_agentActions, EnemyBase);
+            Actions.MoveToEnemyside(_agentActions, EnemyBase);
         }
         
 
         if(_agentSenses.GetObjectsInViewByTag("Flag").Count >= 1)
         {
-            actions.PickUpFlag(_agentSenses, _agentActions);
+            Actions.PickUpFlag(_agentSenses, _agentActions, _agentData);
         }
 
        if(_agentInventory.HasItem("Red Flag") || _agentInventory.HasItem("Blue Flag"))
        {
-            actions.MoveHome(_agentActions, HomeBase);
+            Actions.MoveHome(_agentActions, HomeBase);
        }
 
        if(gameObject.transform.position == GameObject.FindGameObjectWithTag("BlueRetreatZone").transform.position || gameObject.transform.position == GameObject.FindGameObjectWithTag("RedRetreatZone").transform.position)
         {
-            actions.FindHealthKit(_agentActions, _agentSenses, _agentData);
+            Actions.FindHealthKit(_agentActions, _agentSenses, _agentData);
         }
        
 
