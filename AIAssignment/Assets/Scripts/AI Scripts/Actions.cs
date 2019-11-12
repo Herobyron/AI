@@ -168,7 +168,8 @@ public class Actions
 
 }
 
-public class TheAction
+//base action class
+public class ActionBase
 {
     // has the action been completed
     private bool Complete = false;
@@ -176,12 +177,28 @@ public class TheAction
     // can the action be interupted
     private bool Interupt = false;
 
-    
+    // can the action be combined with other actions
+    private bool CanCombine = false;
+
+    private bool IsCombinalbleWith(ActionBase action)
+    {
+        if (CanCombine && action.CanCombine)
+        {
+            return true;
+        }
+        else
+            return false;
+    }
+
+    float EvaluateGoalSatisfaction(Goals TypeToCheck)
+    {
+        return 0;
+    }
 
 }
 
-
-public class ActionSequence : TheAction
+//action sequence class
+public class ActionSequence : ActionBase
 {
     // list of actions for the Ai to complete
     private List<Actions> actionlist = new List<Actions>();
@@ -197,4 +214,16 @@ public class ActionSequence : TheAction
 
 
 
+}
+
+
+public class TheAction : ActionBase
+{
+
+    Dictionary<Goals, float> GoalSatisfaction = new Dictionary<Goals, float>();
+
+    public  float EvaluateGoalSatisfaction(Goals TypeToCheck)
+    {
+        return 0;
+    }
 }
