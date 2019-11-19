@@ -180,6 +180,9 @@ public class ActionBase
     // can the action be combined with other actions
     private bool CanCombine = false;
 
+    //timer for the actions
+    public float timer = 0.0f;
+
     private bool IsCombinalbleWith(ActionBase action)
     {
         if (CanCombine && action.CanCombine)
@@ -195,13 +198,19 @@ public class ActionBase
         return 0;
     }
 
+    public virtual void Reset()
+    {
+        Complete = false;
+        timer = 0.0f;
+    }
+
 }
 
 //action sequence class
 public class ActionSequence : ActionBase
 {
     // list of actions for the Ai to complete
-    private List<Actions> actionlist = new List<Actions>();
+    private List<TheAction> actionlist = new List<TheAction>();
 
     // the current action it is on
     private int ActionNumber = 0;
@@ -212,18 +221,75 @@ public class ActionSequence : ActionBase
 
     }
 
+    //this resets the Actions information like timer 
+    public override void Reset()
+    {
+        ActionNumber = 0;
 
+        foreach(TheAction A in actionlist)
+        {
+            A.Reset();
+        }
+    }
 
 }
 
-
+//action class 
 public class TheAction : ActionBase
 {
+    private bool Interuptable;
+
+    private bool Combinable;
+
+    float ExpireyTime;
+
+    // to determine what action to do
+    private string ActionName;
+
+    private bool complete = false;
+
+    //gives acess to the actoin class
+    Actions action;
 
     Dictionary<Goals, float> GoalSatisfaction = new Dictionary<Goals, float>();
+
+    //constructor
+    public TheAction(Actions Action, string name ,bool interruptable, bool combinale, float expireyTime)
+    {
+        action = Action;
+        ActionName = name;
+        Interuptable = interruptable;
+        Combinable = combinale;
+        ExpireyTime = expireyTime;
+    }
 
     public  float EvaluateGoalSatisfaction(Goals TypeToCheck)
     {
         return 0;
     }
+
+    public void Execute(AI TheAi)
+    {
+        if (!complete)
+        {
+            // later on add a check for a timer
+
+            switch (ActionName)
+            {
+                case ("Attack"):
+                    {
+                        action.Attack(TheAi.GetSensing(), TheAi.GetActions());
+                        break;
+                    }
+                case ("Move"):
+                    {
+                        action.MoveToEnemyside(TheAi.GetActions(), TheAi.EnemyBase);
+                        break;
+                    }
+                default:
+                    break;
+            }
+        }
+    }
+
 }

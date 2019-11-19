@@ -105,7 +105,10 @@ public class AI : MonoBehaviour
         //Goals GoToEnemyBase = new Goals(AIGoals.CaptureFlag, 0, _agentData.MaxHitPoints, _agentData.CurrentHitPoints, GoalValuefunction.Linear);
     }
 
-    Actions Actions = new Actions();
+    Actions TheActions;
+    TheAction A;
+    TheAction B;
+
 
     // Use this for initialization
     void Start ()
@@ -117,54 +120,62 @@ public class AI : MonoBehaviour
         _agentInventory = GetComponentInChildren<InventoryController>();
 
         //actions = GetComponent<Actions>();
+        
+        TheActions = new Actions();
+        A = new TheAction(TheActions, "Move", true, true, 0.0f);
+        B = new TheAction(TheActions, "Attack", true, true, 0.0f);
 
         Retreated = false;
     }
+
+   
 
     // Update is called once per frame
     void Update ()
     {
         // Run your AI code in here
 
-        
 
-        
-        if(_agentSenses.GetEnemiesInView().Count >= 1)
-        {
-            _agentActions.PauseMovement();
-            Actions.Attack(_agentSenses, _agentActions);
+        //TheAction A = new TheAction(Actions.Attack(_agentSenses, _agentActions), true, true, false);
 
-        }
-        else if(_agentData.CurrentHitPoints <= 15)
-        {
-            
-            Actions.LowHealth(_agentData, _agentActions, _agentSenses, Retreated);
-            if(Retreated)
-            {
-                Actions.FindHealthKit(_agentActions, _agentSenses, _agentData);
-            }
-        }
-        else
-        {
-            Actions.MoveToEnemyside(_agentActions, EnemyBase);
-        }
-        
+        //if (_agentSenses.GetEnemiesInView().Count >= 1)
+        //{
+        //    _agentActions.PauseMovement();
+        //    TheActions.Attack(_agentSenses, _agentActions);
+        //
+        //}
+        //else if(_agentData.CurrentHitPoints <= 15)
+        //{
+        //    
+        //    TheActions.LowHealth(_agentData, _agentActions, _agentSenses, Retreated);
+        //    if(Retreated)
+        //    {
+        //        TheActions.FindHealthKit(_agentActions, _agentSenses, _agentData);
+        //    }
+        //}
+        //else
+        //{
+        //    TheActions.MoveToEnemyside(_agentActions, EnemyBase);
+        //}
+        //
+        //
+        //if(_agentSenses.GetObjectsInViewByTag("Flag").Count >= 1)
+        //{
+        //    TheActions.PickUpFlag(_agentSenses, _agentActions, _agentData);
+        //}
+        //
+        //if(_agentInventory.HasItem("Red Flag") || _agentInventory.HasItem("Blue Flag"))
+        //{
+        //     TheActions.MoveHome(_agentActions, HomeBase);
+        //}
+        //
+        //if(gameObject.transform.position == GameObject.FindGameObjectWithTag("BlueRetreatZone").transform.position || gameObject.transform.position == GameObject.FindGameObjectWithTag("RedRetreatZone").transform.position)
+        //{
+        //    TheActions.FindHealthKit(_agentActions, _agentSenses, _agentData);
+        //}
 
-        if(_agentSenses.GetObjectsInViewByTag("Flag").Count >= 1)
-        {
-            Actions.PickUpFlag(_agentSenses, _agentActions, _agentData);
-        }
-
-       if(_agentInventory.HasItem("Red Flag") || _agentInventory.HasItem("Blue Flag"))
-       {
-            Actions.MoveHome(_agentActions, HomeBase);
-       }
-
-       if(gameObject.transform.position == GameObject.FindGameObjectWithTag("BlueRetreatZone").transform.position || gameObject.transform.position == GameObject.FindGameObjectWithTag("RedRetreatZone").transform.position)
-        {
-            Actions.FindHealthKit(_agentActions, _agentSenses, _agentData);
-        }
-       
+        A.Execute(this);
+        B.Execute(this);
 
        // if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
        // {
@@ -172,4 +183,25 @@ public class AI : MonoBehaviour
        // }
 
     }
+
+    public AgentData GetData()
+    {
+        return _agentData;
+    }
+
+    public AgentActions GetActions()
+    {
+        return _agentActions;
+    }
+
+    public Sensing GetSensing()
+    {
+        return _agentSenses;
+    }
+
+    public InventoryController GetInventory()
+    {
+        return _agentInventory;
+    }
+
 }
