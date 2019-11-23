@@ -108,7 +108,7 @@ public class AI : MonoBehaviour
     Actions TheActions;
     TheAction A;
     TheAction B;
-
+    TheAction c;
 
     // Use this for initialization
     void Start ()
@@ -124,6 +124,7 @@ public class AI : MonoBehaviour
         TheActions = new Actions();
         A = new TheAction(TheActions, "Move", true, true, 0.0f);
         B = new TheAction(TheActions, "Attack", true, true, 0.0f);
+        c = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f);
 
         Retreated = false;
     }
@@ -176,7 +177,7 @@ public class AI : MonoBehaviour
 
         A.Execute(this);
         B.Execute(this);
-
+        c.Execute(this);
        // if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
        // {
        //     actions.Fleeing(_agentActions);

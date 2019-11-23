@@ -286,6 +286,11 @@ public class TheAction : ActionBase
                         action.MoveToEnemyside(TheAi.GetActions(), TheAi.EnemyBase);
                         break;
                     }
+                case ("PickUpFlag"):
+                    {
+                        action.PickUpFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData());
+                        break;
+                    }
                 default:
                     break;
             }
