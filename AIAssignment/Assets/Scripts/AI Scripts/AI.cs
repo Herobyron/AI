@@ -108,7 +108,12 @@ public class AI : MonoBehaviour
     Actions TheActions;
     TheAction A;
     TheAction B;
-    TheAction c;
+    TheAction C;
+
+    ActionSequence Sequence;
+
+
+    TheAction Currentaction;
 
     // Use this for initialization
     void Start ()
@@ -122,11 +127,16 @@ public class AI : MonoBehaviour
         //actions = GetComponent<Actions>();
         
         TheActions = new Actions();
-        A = new TheAction(TheActions, "Move", true, true, 0.0f);
-        B = new TheAction(TheActions, "Attack", true, true, 0.0f);
-        c = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f);
+        Sequence = new ActionSequence();
+        A = new TheAction(TheActions, "Move", true, true, 0.0f, true);
+        B = new TheAction(TheActions, "Attack", false, true, 0.0f, false);
+        C = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f, false);
 
         Retreated = false;
+
+        Sequence.AddAction(A);
+        Sequence.AddAction(C);
+
     }
 
    
@@ -175,13 +185,20 @@ public class AI : MonoBehaviour
         //    TheActions.FindHealthKit(_agentActions, _agentSenses, _agentData);
         //}
 
-        A.Execute(this);
+
+        //A.Execute(this);
         B.Execute(this);
-        c.Execute(this);
-       // if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
-       // {
-       //     actions.Fleeing(_agentActions);
-       // }
+
+        Sequence.ExecuteAll(this, B);
+        //C.Execute(this);
+
+        Currentaction = Sequence.ReturnCurrentAction();
+
+
+        // if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
+        // {
+        //     actions.Fleeing(_agentActions);
+        // }
 
     }
 

@@ -117,6 +117,7 @@ public class Actions
 
     public  void Attack(Sensing view, AgentActions action)
     {
+        
         //first see if an enemy comes into view
        foreach(GameObject G in view.GetEnemiesInView())
        {
@@ -204,6 +205,11 @@ public class ActionBase
         timer = 0.0f;
     }
 
+    public bool IsInteruptable()
+    {
+        return Interupt;
+    }
+
 }
 
 //action sequence class
@@ -214,6 +220,8 @@ public class ActionSequence : ActionBase
 
     // the current action it is on
     private int ActionNumber = 0;
+
+    private TheAction CurrentAction = null;
 
     //constructor
     public ActionSequence()
@@ -232,6 +240,37 @@ public class ActionSequence : ActionBase
         }
     }
 
+    public void ExecuteAll(AI TheAI, TheAction PreviousAction)
+    {
+        foreach(TheAction A in actionlist)
+        {
+            //sets what the current action is
+            SetCurrentAction(A);
+
+            if (PreviousAction.IsInteruptable() || A.first)
+            {
+                A.first = false;
+                A.Execute(TheAI);
+            }
+        }
+    }
+
+    public void AddAction(TheAction action)
+    {
+        actionlist.Add(action);
+    }
+
+    public void SetCurrentAction(TheAction Action)
+    {
+        CurrentAction =  Action;
+    }
+
+    public TheAction ReturnCurrentAction()
+    {
+        return CurrentAction;
+    }
+
+
 }
 
 //action class 
@@ -240,6 +279,8 @@ public class TheAction : ActionBase
     private bool Interuptable;
 
     private bool Combinable;
+
+    public bool first;
 
     float ExpireyTime;
 
@@ -254,13 +295,17 @@ public class TheAction : ActionBase
     Dictionary<Goals, float> GoalSatisfaction = new Dictionary<Goals, float>();
 
     //constructor
-    public TheAction(Actions Action, string name ,bool interruptable, bool combinale, float expireyTime)
+    public TheAction(Actions Action, string name ,bool interruptable, bool combinale, float expireyTime, bool FirstAction)
     {
         action = Action;
         ActionName = name;
         Interuptable = interruptable;
+
+        Debug.Log(interruptable);
+
         Combinable = combinale;
         ExpireyTime = expireyTime;
+        first = FirstAction;
     }
 
     public  float EvaluateGoalSatisfaction(Goals TypeToCheck)
@@ -268,32 +313,39 @@ public class TheAction : ActionBase
         return 0;
     }
 
+    //parameters
+    //Param 1 : is the Ai script as it needs acess to the sensing data and AI data
+    //Param 2 : this takes the previous actions bool to check if it is interuptable 
+    // this checks to see if the previous action was interuptable
+
     public void Execute(AI TheAi)
     {
         if (!complete)
         {
-            // later on add a check for a timer
-
-            switch (ActionName)
-            {
-                case ("Attack"):
-                    {
-                        action.Attack(TheAi.GetSensing(), TheAi.GetActions());
+            //if the previous action can be interupted
+                switch (ActionName)
+                {
+                    case ("Attack"):
+                        {
+                            Debug.Log("Entered Attack");
+                            TheAi.GetActions().PauseMovement();
+                            action.Attack(TheAi.GetSensing(), TheAi.GetActions());
+                            TheAi.GetActions().ResumeMovement();
+                            break;
+                        }
+                    case ("Move"):
+                        {
+                            action.MoveToEnemyside(TheAi.GetActions(), TheAi.EnemyBase);
+                            break;
+                        }
+                    case ("PickUpFlag"):
+                        {
+                            action.PickUpFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData());
+                            break;
+                        }
+                    default:
                         break;
-                    }
-                case ("Move"):
-                    {
-                        action.MoveToEnemyside(TheAi.GetActions(), TheAi.EnemyBase);
-                        break;
-                    }
-                case ("PickUpFlag"):
-                    {
-                        action.PickUpFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData());
-                        break;
-                    }
-                default:
-                    break;
-            }
+                }
         }
     }
 
