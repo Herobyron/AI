@@ -6,9 +6,44 @@ public class Actions
 {
     // these will be the actions that the AI can execute
     //actions return true or false to determine wether they have finished exectuing. for example you dont want the attcaker to hit once then just stop. it needs to loop until enemy is dead
-
-    public static bool Gaurd()
+    public bool MoveToEnemyside(AgentActions actions, GameObject enemybase)
     {
+        actions.MoveTo(enemybase);
+
+        return true;
+    }
+
+    public bool MoveHome(AgentActions actions, GameObject HomeBase)
+    {
+        actions.MoveTo(HomeBase);
+
+        return true;
+    }
+
+
+    public bool Gaurd(AgentActions actions, Sensing sensing, AgentData data, GameObject HomeBase, GameObject GuardSpotOne, GameObject GuardSpotTwo, int GuardSpotNumber)
+    {
+        //move home
+        MoveHome(actions, HomeBase);
+
+        //check to see if enemy flag is within your base
+        if(FindEnemyflag(sensing, data))
+        {
+            // if there are any enemies within view then they need to attack the enemy 
+            Attack(sensing, actions);
+
+            if(GuardSpotNumber == 1 )
+            {
+                //might want to change this so that it move between two spots every time the function is called to act more like a gaurding Ai
+                actions.MoveTo(GuardSpotOne);
+            }
+            else if(GuardSpotNumber == 2)
+            {
+                actions.MoveTo(GuardSpotTwo);
+            }
+
+        }
+
         return true;
     }
 
@@ -150,20 +185,29 @@ public class Actions
 
     }
 
-    public bool MoveToEnemyside(AgentActions actions, GameObject enemybase)
+    
+    public bool FindEnemyflag(Sensing sight, AgentData data)
     {
-        actions.MoveTo(enemybase);
+        //gets a list of the items within view
+        List<GameObject> temp = new List<GameObject>();
 
-        return true;
+        //finds all items with the flag tag
+        foreach (GameObject g in sight.GetObjectsInViewByTag("Flag"))
+        {
+            temp.Add(g);
+        }
+
+        for(int i = 0; i < temp.Count; ++i)
+        {
+            if(temp[i].name == data.EnemyFlagName)
+            {
+                return true;
+            }
+        }
+
+
+        return false;
     }
-
-    public bool MoveHome(AgentActions actions, GameObject HomeBase )
-    {
-        actions.MoveTo(HomeBase);
-
-        return true;
-    }
-
 
 
 
@@ -357,6 +401,11 @@ public class TheAction : ActionBase
                     case ("PickUpFlag"):
                         {
                             action.PickUpFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData());
+                            break;
+                        }
+                    case ("Guard"):
+                        {
+                            action.Gaurd(TheAi.GetActions(), TheAi.GetSensing(), TheAi.GetData(), TheAi.HomeBase, TheAi.FriendlyGuardSpotOne, TheAi.FreindlyGuardSpotTwo, TheAi.GuardspotNumber);
                             break;
                         }
                     default:

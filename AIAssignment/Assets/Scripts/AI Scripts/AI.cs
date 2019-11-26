@@ -98,6 +98,11 @@ public class AI : MonoBehaviour
     public GameObject EnemyBase;
     public GameObject HomeBase;
 
+    public int GuardspotNumber = 1;
+    public GameObject FriendlyGuardSpotOne;
+    public GameObject FreindlyGuardSpotTwo;
+
+
     public bool Retreated;
 
     Actions TheActions = new Actions();
