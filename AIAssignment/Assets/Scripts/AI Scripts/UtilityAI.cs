@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class UtilityAI 
 {
-    public List<Actions> actionlist = new List<Actions>();
+    public List<ActionBase> actionlist = new List<ActionBase>();
 
     public List<Goals> goallist = new List<Goals>();
 
@@ -15,7 +15,7 @@ public class UtilityAI
     }
 
     //adds a action to the existing list of actions
-    public void AddAction(Actions action)
+    public void AddAction(ActionBase action)
     {
         actionlist.Add(action);
     }
@@ -33,6 +33,31 @@ public class UtilityAI
         }
     }
 
+    public ActionBase ChooseAction()
+    {
+        //this will be the goal that has the maximum utility (so is the highest on the list)
+        //determines what goal it needs to take
+        Goals MaxGoal = goallist[0];
+        foreach(Goals G in goallist)
+        {
+            if(G.Utility() > MaxGoal.Utility())
+            {
+                MaxGoal = G;
+            }
+        }
 
+        //find the action which satisfies the goal the most
+        ActionBase MaxAction = actionlist[0];
+        foreach(ActionBase A in actionlist)
+        {
+            if (A.EvaluateGoalSatisfaction(MaxGoal.TypeReturn()) > MaxAction.EvaluateGoalSatisfaction(MaxGoal.TypeReturn()))
+            {
+                MaxAction = A;
+            }
+        }
+
+        return MaxAction;
+
+    }
 
 }

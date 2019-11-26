@@ -15,7 +15,8 @@ public class Goals
     private float Gvalue;
 
     // this is the class to determine how much value the goal gives towards the utiltiy
-    GoalValuefunction UtilityValue = new GoalValuefunction();
+    GoalValuefunction UtilityValue;
+
 
     AIGoals goaltype;
 
@@ -39,6 +40,12 @@ public class Goals
     {
         return Gvalue;
     }
+
+    public float Utility()
+    {
+        return UtilityValue.Linear(MinimumGoalValue, MaximumGoalValue, Gvalue);
+    }
+
 
     public AIGoals TypeReturn()
     {

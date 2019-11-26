@@ -184,7 +184,9 @@ public class ActionBase
     //timer for the actions
     public float timer = 0.0f;
 
-    private bool IsCombinalbleWith(ActionBase action)
+    Dictionary<AIGoals, float> GoalSatisfaction = new Dictionary<AIGoals, float>();
+
+    public bool IsCombinalbleWith(ActionBase action)
     {
         if (CanCombine && action.CanCombine)
         {
@@ -194,8 +196,21 @@ public class ActionBase
             return false;
     }
 
-    float EvaluateGoalSatisfaction(Goals TypeToCheck)
+    public void SetGoalSatisfaction(AIGoals goal, float value)
     {
+        if (!GoalSatisfaction.ContainsKey(goal))
+        {
+            GoalSatisfaction[goal] = value;
+        }
+    }
+
+    public float EvaluateGoalSatisfaction(AIGoals TypeToCheck)
+    {
+        if (GoalSatisfaction.ContainsKey(TypeToCheck))
+        {
+            return GoalSatisfaction[TypeToCheck];
+        }
+
         return 0;
     }
 
@@ -292,7 +307,7 @@ public class TheAction : ActionBase
     //gives acess to the actoin class
     Actions action;
 
-    Dictionary<Goals, float> GoalSatisfaction = new Dictionary<Goals, float>();
+    //Dictionary<AIGoals, float> GoalSatisfaction = new Dictionary<AIGoals, float>();
 
     //constructor
     public TheAction(Actions Action, string name ,bool interruptable, bool combinale, float expireyTime, bool FirstAction)
@@ -308,15 +323,27 @@ public class TheAction : ActionBase
         first = FirstAction;
     }
 
-    public  float EvaluateGoalSatisfaction(Goals TypeToCheck)
-    {
-        return 0;
-    }
+    //public void SetGoalSatisfaction(AIGoals goal, float value)
+    //{
+    //    if(!GoalSatisfaction.ContainsKey(goal))
+    //    {
+    //        GoalSatisfaction[goal] = value;
+    //    }
+    //}
+    //
+    ////checks the value in the dictionary that is linked to the goal that has been entered
+    //public  float EvaluateGoalSatisfaction(AIGoals TypeToCheck)
+    //{
+    //    if (GoalSatisfaction.ContainsKey(TypeToCheck))
+    //    {
+    //        return GoalSatisfaction[TypeToCheck];
+    //    }
+    //
+    //    return 0;
+    //}
 
     //parameters
     //Param 1 : is the Ai script as it needs acess to the sensing data and AI data
-    //Param 2 : this takes the previous actions bool to check if it is interuptable 
-    // this checks to see if the previous action was interuptable
 
     public void Execute(AI TheAi)
     {
@@ -327,15 +354,18 @@ public class TheAction : ActionBase
                 {
                     case ("Attack"):
                         {
-                            Debug.Log("Entered Attack");
+                            //Debug.Log("Entered Attack");
                             TheAi.GetActions().PauseMovement();
                             action.Attack(TheAi.GetSensing(), TheAi.GetActions());
                             TheAi.GetActions().ResumeMovement();
+
+                           
                             break;
                         }
                     case ("Move"):
                         {
                             action.MoveToEnemyside(TheAi.GetActions(), TheAi.EnemyBase);
+                           
                             break;
                         }
                     case ("PickUpFlag"):
@@ -346,6 +376,8 @@ public class TheAction : ActionBase
                     default:
                         break;
                 }
+
+            
         }
     }
 

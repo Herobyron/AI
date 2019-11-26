@@ -100,20 +100,39 @@ public class AI : MonoBehaviour
 
     public bool Retreated;
 
-    private void Awake()
-    {
-        //Goals GoToEnemyBase = new Goals(AIGoals.CaptureFlag, 0, _agentData.MaxHitPoints, _agentData.CurrentHitPoints, GoalValuefunction.Linear);
-    }
-
-    Actions TheActions;
+    Actions TheActions = new Actions();
     TheAction A;
     TheAction B;
     TheAction C;
 
-    ActionSequence Sequence;
+     
 
+    GoalValuefunction Valuefunctions = new GoalValuefunction();
 
     TheAction Currentaction;
+
+    UtilityAI TheAI = new UtilityAI();
+    void Awake()
+    {
+        Goals GoPickUpFlag = new Goals(AIGoals.CaptureFlag, 0.0f, 1.0f, 0.0f, Valuefunctions);
+
+        A = new TheAction(TheActions, "Move", true, true, 0.0f, true);
+        A.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
+
+        B = new TheAction(TheActions, "Attack", false, true, 0.0f, false);
+        B.SetGoalSatisfaction(AIGoals.attack, 1);
+
+        C = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f, false);
+        C.SetGoalSatisfaction(AIGoals.CaptureFlag, 2);
+
+        ActionSequence Sequence = new ActionSequence();
+        Sequence.AddAction(A);
+        Sequence.AddAction(B);
+        Sequence.AddAction(C);
+
+        TheAI.AddGoal(GoPickUpFlag);
+        TheAI.AddAction(Sequence);
+    }
 
     // Use this for initialization
     void Start ()
@@ -125,17 +144,10 @@ public class AI : MonoBehaviour
         _agentInventory = GetComponentInChildren<InventoryController>();
 
         //actions = GetComponent<Actions>();
-        
-        TheActions = new Actions();
-        Sequence = new ActionSequence();
-        A = new TheAction(TheActions, "Move", true, true, 0.0f, true);
-        B = new TheAction(TheActions, "Attack", false, true, 0.0f, false);
-        C = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f, false);
-
         Retreated = false;
 
-        Sequence.AddAction(A);
-        Sequence.AddAction(C);
+        //Sequence.AddAction(A);
+        //Sequence.AddAction(C);
 
     }
 
@@ -144,61 +156,15 @@ public class AI : MonoBehaviour
     // Update is called once per frame
     void Update ()
     {
-        // Run your AI code in here
+        // Ai actions and sequences without goals
+        //B.Execute(this);
+        //Sequence.ExecuteAll(this, B);
+        
+
+        //everything implemented
 
 
-        //TheAction A = new TheAction(Actions.Attack(_agentSenses, _agentActions), true, true, false);
 
-        //if (_agentSenses.GetEnemiesInView().Count >= 1)
-        //{
-        //    _agentActions.PauseMovement();
-        //    TheActions.Attack(_agentSenses, _agentActions);
-        //
-        //}
-        //else if(_agentData.CurrentHitPoints <= 15)
-        //{
-        //    
-        //    TheActions.LowHealth(_agentData, _agentActions, _agentSenses, Retreated);
-        //    if(Retreated)
-        //    {
-        //        TheActions.FindHealthKit(_agentActions, _agentSenses, _agentData);
-        //    }
-        //}
-        //else
-        //{
-        //    TheActions.MoveToEnemyside(_agentActions, EnemyBase);
-        //}
-        //
-        //
-        //if(_agentSenses.GetObjectsInViewByTag("Flag").Count >= 1)
-        //{
-        //    TheActions.PickUpFlag(_agentSenses, _agentActions, _agentData);
-        //}
-        //
-        //if(_agentInventory.HasItem("Red Flag") || _agentInventory.HasItem("Blue Flag"))
-        //{
-        //     TheActions.MoveHome(_agentActions, HomeBase);
-        //}
-        //
-        //if(gameObject.transform.position == GameObject.FindGameObjectWithTag("BlueRetreatZone").transform.position || gameObject.transform.position == GameObject.FindGameObjectWithTag("RedRetreatZone").transform.position)
-        //{
-        //    TheActions.FindHealthKit(_agentActions, _agentSenses, _agentData);
-        //}
-
-
-        //A.Execute(this);
-        B.Execute(this);
-
-        Sequence.ExecuteAll(this, B);
-        //C.Execute(this);
-
-        Currentaction = Sequence.ReturnCurrentAction();
-
-
-        // if (gameObject.name == "Red Team Member 2" || gameObject.name == "Blue Team Member 2")
-        // {
-        //     actions.Fleeing(_agentActions);
-        // }
 
     }
 
