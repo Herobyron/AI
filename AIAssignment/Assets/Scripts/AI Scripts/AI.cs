@@ -159,12 +159,13 @@ public class AI : MonoBehaviour
         // Ai actions and sequences without goals
         //B.Execute(this);
         //Sequence.ExecuteAll(this, B);
-        
-
-        //everything implemented
 
 
+        //everything implemented code
+        TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
 
+        ActionSequence CurrentAction = TheAI.ChooseAction();
+        CurrentAction.Execute(this);
 
     }
 

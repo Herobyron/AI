@@ -186,6 +186,9 @@ public class ActionBase
 
     Dictionary<AIGoals, float> GoalSatisfaction = new Dictionary<AIGoals, float>();
 
+    //gives acess to the actoin class
+    Actions action;
+
     public bool IsCombinalbleWith(ActionBase action)
     {
         if (CanCombine && action.CanCombine)
@@ -213,6 +216,11 @@ public class ActionBase
 
         return 0;
     }
+
+    //public void Execute(AI TheAi)
+    //{
+    //
+    //}
 
     public virtual void Reset()
     {
@@ -244,6 +252,7 @@ public class ActionSequence : ActionBase
 
     }
 
+
     //this resets the Actions information like timer 
     public override void Reset()
     {
@@ -255,18 +264,12 @@ public class ActionSequence : ActionBase
         }
     }
 
-    public void ExecuteAll(AI TheAI, TheAction PreviousAction)
+    public void Execute(AI TheAI)
     {
         foreach(TheAction A in actionlist)
         {
-            //sets what the current action is
-            SetCurrentAction(A);
-
-            if (PreviousAction.IsInteruptable() || A.first)
-            {
                 A.first = false;
                 A.Execute(TheAI);
-            }
         }
     }
 
@@ -323,24 +326,7 @@ public class TheAction : ActionBase
         first = FirstAction;
     }
 
-    //public void SetGoalSatisfaction(AIGoals goal, float value)
-    //{
-    //    if(!GoalSatisfaction.ContainsKey(goal))
-    //    {
-    //        GoalSatisfaction[goal] = value;
-    //    }
-    //}
-    //
-    ////checks the value in the dictionary that is linked to the goal that has been entered
-    //public  float EvaluateGoalSatisfaction(AIGoals TypeToCheck)
-    //{
-    //    if (GoalSatisfaction.ContainsKey(TypeToCheck))
-    //    {
-    //        return GoalSatisfaction[TypeToCheck];
-    //    }
-    //
-    //    return 0;
-    //}
+    
 
     //parameters
     //Param 1 : is the Ai script as it needs acess to the sensing data and AI data
