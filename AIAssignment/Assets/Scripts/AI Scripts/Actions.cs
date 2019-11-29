@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Actions
 {
+    
+
+
+
     // these will be the actions that the AI can execute
     //actions return true or false to determine wether they have finished exectuing. for example you dont want the attcaker to hit once then just stop. it needs to loop until enemy is dead
     public bool MoveToEnemyside(AgentActions actions, GameObject enemybase)
@@ -15,7 +19,18 @@ public class Actions
 
     public bool MoveHome(AgentActions actions, GameObject HomeBase)
     {
+        
         actions.MoveTo(HomeBase);
+
+        return true;
+    }
+
+    public bool MoveHomeWithFlag(AgentActions actions, GameObject Homebase, bool flag)
+    {
+        if(flag)
+        {
+            actions.MoveTo(Homebase);
+        }
 
         return true;
     }
@@ -106,6 +121,7 @@ public class Actions
 
     public bool PickUpFlag(Sensing sight, AgentActions actions, AgentData data)
     {
+
          List<GameObject> temp = new List<GameObject>();
       
         foreach (GameObject g in sight.GetObjectsInViewByTag("Flag"))
@@ -115,12 +131,11 @@ public class Actions
 
         for(int i = 0; i < temp.Count; ++i)
         {
-            Debug.Log("flag has been found");
-            Debug.Log(temp.Count);
+           
 
             if(temp[i].name == "Red Flag") //checks to make sure the item within range is the red flag
             {
-                Debug.Log("red flag in contents");
+               
 
                 if (data.FriendlyTeamTag == Tags.BlueTeam)
                 {
@@ -128,11 +143,12 @@ public class Actions
                     actions.MoveTo(temp[i]);
                     // then it collects the item
                     actions.CollectItem(temp[i]);
+                    
                 }
             }
             else if (temp[i].name == "Blue Flag") //checks to make sure the item within range is the blue flag
             {
-                Debug.Log("blue flag in contents");
+               
                 
                 if (data.FriendlyTeamTag == Tags.RedTeam)
                 {
@@ -145,9 +161,15 @@ public class Actions
             }
             
         }
-        
 
-        return true;
+        if(data.HasEnemyFlag)
+        {
+            return true;
+        }
+
+
+        
+        return false;
     }
 
     public  void Attack(Sensing view, AgentActions action)
@@ -207,6 +229,19 @@ public class Actions
 
 
         return false;
+    }
+
+
+    public bool DropItemAtBase(GameObject FriendlyBase, AI TheAi, AgentActions TheActions, bool flag)
+    {
+        if(TheAi.transform.position.x == FriendlyBase.transform.position.x  || TheAi.transform.position.x == FriendlyBase.transform.position.y)
+        {
+            if(flag)
+            TheActions.DropAllItems();
+        }
+
+
+        return true;
     }
 
 
@@ -362,9 +397,6 @@ public class TheAction : ActionBase
         action = Action;
         ActionName = name;
         Interuptable = interruptable;
-
-        Debug.Log(interruptable);
-
         Combinable = combinale;
         ExpireyTime = expireyTime;
         first = FirstAction;
@@ -392,15 +424,18 @@ public class TheAction : ActionBase
                            
                             break;
                         }
-                    case ("Move"):
+                    case ("MoveEnemySide"):
                         {
+                            if(!TheAi.GotEnemyflag)
                             action.MoveToEnemyside(TheAi.GetActions(), TheAi.EnemyBase);
-                           
+                            Debug.Log(TheAi.GotEnemyflag);
                             break;
                         }
                     case ("PickUpFlag"):
                         {
-                            action.PickUpFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData());
+                            
+                            TheAi.GotEnemyflag = action.PickUpFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData());
+                           
                             break;
                         }
                     case ("Guard"):
@@ -408,6 +443,17 @@ public class TheAction : ActionBase
                             action.Gaurd(TheAi.GetActions(), TheAi.GetSensing(), TheAi.GetData(), TheAi.HomeBase, TheAi.FriendlyGuardSpotOne, TheAi.FreindlyGuardSpotTwo, TheAi.GuardspotNumber);
                             break;
                         }
+                    case ("MoveHome"):
+                        {
+                            action.MoveHomeWithFlag(TheAi.GetActions(), TheAi.HomeBase, TheAi.GotEnemyflag);
+                            break;
+                        }
+                   case ("DropFlag"):
+                       {
+                           action.DropItemAtBase(TheAi.HomeBase, TheAi, TheAi.GetActions(), TheAi.GotEnemyflag);
+                           break;
+                       }
+                
                     default:
                         break;
                 }

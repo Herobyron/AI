@@ -102,6 +102,8 @@ public class AI : MonoBehaviour
     public GameObject FriendlyGuardSpotOne;
     public GameObject FreindlyGuardSpotTwo;
 
+    public bool GotEnemyflag = false;
+
 
     public bool Retreated;
 
@@ -109,7 +111,8 @@ public class AI : MonoBehaviour
     TheAction A;
     TheAction B;
     TheAction C;
-
+    TheAction D;
+    TheAction E;
      
 
     GoalValuefunction Valuefunctions = new GoalValuefunction();
@@ -119,9 +122,10 @@ public class AI : MonoBehaviour
     UtilityAI TheAI = new UtilityAI();
     void Awake()
     {
+        //goal One go get Flag and Bring it back
         Goals GoPickUpFlag = new Goals(AIGoals.CaptureFlag, 0.0f, 1.0f, 0.0f, Valuefunctions);
 
-        A = new TheAction(TheActions, "Move", true, true, 0.0f, true);
+        A = new TheAction(TheActions, "MoveEnemySide", true, true, 0.0f, true);
         A.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
 
         B = new TheAction(TheActions, "Attack", false, true, 0.0f, false);
@@ -130,10 +134,23 @@ public class AI : MonoBehaviour
         C = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f, false);
         C.SetGoalSatisfaction(AIGoals.CaptureFlag, 2);
 
+        D = new TheAction(TheActions, "MoveHome", true, true, 0.0f, false);
+        D.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
+
+        E = new TheAction(TheActions, "DropFlag", true, true, 0.0f, false);
+        E.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
+
+
         ActionSequence Sequence = new ActionSequence();
         Sequence.AddAction(A);
         Sequence.AddAction(B);
         Sequence.AddAction(C);
+        Sequence.AddAction(D);
+        Sequence.AddAction(E);
+
+
+
+
 
         TheAI.AddGoal(GoPickUpFlag);
         TheAI.AddAction(Sequence);
