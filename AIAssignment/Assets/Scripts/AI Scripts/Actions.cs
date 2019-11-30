@@ -35,28 +35,46 @@ public class Actions
         return true;
     }
 
+    //if the AI does not have the flag it finds all tema mates and finds which ever one has the glag
+    public bool ProtectTeamMate(Sensing sense, AgentData data, AgentActions actions)
+    {
+        List<GameObject> TeamMembers; 
+        TeamMembers = sense.GetFriendliesInView();
+
+        if (!data.HasEnemyFlag)
+        {
+            foreach(GameObject G in TeamMembers)
+            {
+                if(G.GetComponent<AgentData>().HasEnemyFlag)
+                {
+                    actions.MoveTo(G);
+                }
+            }
+
+
+
+        }
+
+        return true;
+    }
+
 
     public bool Gaurd(AgentActions actions, Sensing sensing, AgentData data, GameObject HomeBase, GameObject GuardSpotOne, GameObject GuardSpotTwo, int GuardSpotNumber)
     {
         //move home
         MoveHome(actions, HomeBase);
 
-        //check to see if enemy flag is within your base
-        if(FindEnemyflag(sensing, data))
+        // if there are any enemies within view then they need to attack the enemy 
+        Attack(sensing, actions);
+
+        if(GuardSpotNumber == 1 )
         {
-            // if there are any enemies within view then they need to attack the enemy 
-            Attack(sensing, actions);
-
-            if(GuardSpotNumber == 1 )
-            {
-                //might want to change this so that it move between two spots every time the function is called to act more like a gaurding Ai
-                actions.MoveTo(GuardSpotOne);
-            }
-            else if(GuardSpotNumber == 2)
-            {
-                actions.MoveTo(GuardSpotTwo);
-            }
-
+            //might want to change this so that it move between two spots every time the function is called to act more like a gaurding Ai
+            actions.MoveTo(GuardSpotOne);
+        }
+        else if(GuardSpotNumber == 2)
+        {
+            actions.MoveTo(GuardSpotTwo);
         }
 
         return true;
@@ -234,7 +252,7 @@ public class Actions
 
     public bool DropItemAtBase(GameObject FriendlyBase, AI TheAi, AgentActions TheActions, bool flag)
     {
-        if(TheAi.transform.position.x == FriendlyBase.transform.position.x  || TheAi.transform.position.x == FriendlyBase.transform.position.y)
+        if(TheAi.transform.position.x == FriendlyBase.transform.position.x  || TheAi.transform.position.y == FriendlyBase.transform.position.y)
         {
             if(flag)
             TheActions.DropAllItems();
@@ -244,7 +262,33 @@ public class Actions
         return true;
     }
 
+    public bool CheckflagAtBase(Sensing sense, AgentData data, GameObject FriendBase)
+    {
 
+        //gets a list of the items within view
+        List<GameObject> temp = new List<GameObject>();
+
+        //finds all items with the flag tag
+        foreach (GameObject g in sense.GetObjectsInViewByTag("Flag"))
+        {
+            temp.Add(g);
+        }
+
+        for (int i = 0; i < temp.Count; ++i)
+        {
+            if (temp[i].name == data.EnemyFlagName)
+            {
+                Debug.Log("Found Flag");
+                if (temp[i].transform.position.x == FriendBase.transform.position.x || (temp[i].transform.position.x == FriendBase.transform.position.x - 50) || (temp[i].transform.position.x == FriendBase.transform.position.x + 50) )
+                {
+                    return true;
+                }
+            }
+        }
+
+
+        return false;
+    }
 
 }
 
@@ -267,6 +311,8 @@ public class ActionBase
 
     //gives acess to the actoin class
     Actions action;
+
+    AIGoals GoalItSatisfies;
 
     public bool IsCombinalbleWith(ActionBase action)
     {
@@ -428,7 +474,7 @@ public class TheAction : ActionBase
                         {
                             if(!TheAi.GotEnemyflag)
                             action.MoveToEnemyside(TheAi.GetActions(), TheAi.EnemyBase);
-                            Debug.Log(TheAi.GotEnemyflag);
+                            
                             break;
                         }
                     case ("PickUpFlag"):
@@ -453,7 +499,11 @@ public class TheAction : ActionBase
                            action.DropItemAtBase(TheAi.HomeBase, TheAi, TheAi.GetActions(), TheAi.GotEnemyflag);
                            break;
                        }
-                
+                   case ("ProtectTeamMateWithFlag"):
+                       {
+                           action.ProtectTeamMate(TheAi.GetSensing(), TheAi.GetData(), TheAi.GetActions());
+                           break;
+                       }
                     default:
                         break;
                 }

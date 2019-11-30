@@ -39,6 +39,7 @@ public class UtilityAI
         {
             if(goal.TypeReturn() == Type)
             {
+                
                 goal.SetValue(value);
             }
         }
@@ -51,8 +52,9 @@ public class UtilityAI
         Goals MaxGoal = goallist[0];
         foreach(Goals G in goallist)
         {
-            if(G.Utility() > MaxGoal.Utility())
+            if(G.GetValue() > MaxGoal.GetValue())
             {
+                
                 MaxGoal = G;
             }
         }
@@ -65,6 +67,9 @@ public class UtilityAI
             {
                 MaxAction = A;
             }
+
+
+
         }
 
         return MaxAction;

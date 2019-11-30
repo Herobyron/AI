@@ -78,7 +78,7 @@ using UnityEngine;
 /// </summary>
 /// 
 
-public enum AIGoals { CaptureFlag, retreat, attack };
+public enum AIGoals { CaptureFlag, retreat, attack, ProtectFriend, Guard };
 
 
 public class AI : MonoBehaviour
@@ -93,8 +93,8 @@ public class AI : MonoBehaviour
     // e.g. agentScript.MoveTo(enemy);
     private AgentActions _agentActions;
 
-    //private Actions actions;
-
+  
+    // refernces to gameobject in the world 
     public GameObject EnemyBase;
     public GameObject HomeBase;
 
@@ -104,43 +104,58 @@ public class AI : MonoBehaviour
 
     public bool GotEnemyflag = false;
 
+    public bool Startcheck = false;
 
     public bool Retreated;
 
     Actions TheActions = new Actions();
+
+    //the Actions for the first Goal GoPickUpFlag
     TheAction A;
     TheAction B;
     TheAction C;
     TheAction D;
     TheAction E;
-     
 
+    //the set of actions required for the second Goal
+    TheAction A2;
+
+    //the set of actions for the third goal
+    TheAction A3;
+
+    //refernce to calculate the utility value of each goal
     GoalValuefunction Valuefunctions = new GoalValuefunction();
 
+    //the current actions for the AI To Complete
     TheAction Currentaction;
 
+    //refernce to the utiltiy AI
     UtilityAI TheAI = new UtilityAI();
     void Awake()
     {
-        //goal One go get Flag and Bring it back
-        Goals GoPickUpFlag = new Goals(AIGoals.CaptureFlag, 0.0f, 1.0f, 0.0f, Valuefunctions);
+        
 
+
+        //goal One go get Flag and Bring it back
+        Goals GoPickUpFlag = new Goals(AIGoals.CaptureFlag, 0.0f, 10.0f, 0.0f, Valuefunctions);
+
+        //actions included within the goal
         A = new TheAction(TheActions, "MoveEnemySide", true, true, 0.0f, true);
         A.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
 
         B = new TheAction(TheActions, "Attack", false, true, 0.0f, false);
-        B.SetGoalSatisfaction(AIGoals.attack, 1);
+        B.SetGoalSatisfaction(AIGoals.attack, 2);
 
         C = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f, false);
-        C.SetGoalSatisfaction(AIGoals.CaptureFlag, 2);
+        C.SetGoalSatisfaction(AIGoals.CaptureFlag, 3);
 
         D = new TheAction(TheActions, "MoveHome", true, true, 0.0f, false);
-        D.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
+        D.SetGoalSatisfaction(AIGoals.CaptureFlag, 4);
 
         E = new TheAction(TheActions, "DropFlag", true, true, 0.0f, false);
-        E.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
+        E.SetGoalSatisfaction(AIGoals.CaptureFlag, 5);
 
-
+        //the actions sequence for the first goal
         ActionSequence Sequence = new ActionSequence();
         Sequence.AddAction(A);
         Sequence.AddAction(B);
@@ -148,12 +163,41 @@ public class AI : MonoBehaviour
         Sequence.AddAction(D);
         Sequence.AddAction(E);
 
+        Sequence.SetGoalSatisfaction(AIGoals.CaptureFlag, 5);
 
+        //goal two protect the team mate with the flag
+        Goals ProtectTeamMate = new Goals(AIGoals.ProtectFriend, 0.0f, 1.0f, 0.0f, Valuefunctions);
 
+        // the unique actions for the second goal
+        A2 = new TheAction(TheActions, "ProtectTeamMateWithFlag", true, true, 0.0f, true);
+        A2.SetGoalSatisfaction(AIGoals.ProtectFriend, 1);
+        
+        // the action sequence for the second goal
+        ActionSequence Sequence2 = new ActionSequence();
+        Sequence2.AddAction(A2);
+        Sequence2.AddAction(B);
+        Sequence2.SetGoalSatisfaction(AIGoals.ProtectFriend, 5);
+        
+        //goal to guard the base once you have the enemy flag
+        Goals GuardBase = new Goals(AIGoals.Guard ,0 ,5 ,0 ,Valuefunctions);
 
+        //the actions unique included within the third goal
+        A3 = new TheAction(TheActions, "Guard", true, true, 0.0f, true);
+        A3.SetGoalSatisfaction(AIGoals.Guard, 1);
 
+        //the action sequence for the third goal
+        ActionSequence Sequence3 = new ActionSequence();
+        Sequence3.AddAction(A3);
+        Sequence3.AddAction(B);
+        Sequence3.SetGoalSatisfaction(AIGoals.Guard, 5);
+
+        //adding the goals and actions to the AI
         TheAI.AddGoal(GoPickUpFlag);
         TheAI.AddAction(Sequence);
+        TheAI.AddGoal(ProtectTeamMate);
+        TheAI.AddAction(Sequence2);
+        TheAI.AddGoal(GuardBase);
+        TheAI.AddAction(Sequence3);
     }
 
     // Use this for initialization
@@ -168,6 +212,18 @@ public class AI : MonoBehaviour
         //actions = GetComponent<Actions>();
         Retreated = false;
 
+        if (_agentData.FriendlyTeamTag == "Blue Team")
+        {
+            FreindlyGuardSpotTwo = GameObject.FindGameObjectWithTag("BlueGuardSpotTwo");
+            FriendlyGuardSpotOne = GameObject.FindGameObjectWithTag("BlueGuardSpotOne");
+        }
+        else
+        {
+            FreindlyGuardSpotTwo = GameObject.FindGameObjectWithTag("RedGuardSpotTwo");
+            FriendlyGuardSpotOne = GameObject.FindGameObjectWithTag("RedGuardSpotOne");
+        }
+
+
         //Sequence.AddAction(A);
         //Sequence.AddAction(C);
 
@@ -178,17 +234,12 @@ public class AI : MonoBehaviour
     // Update is called once per frame
     void Update ()
     {
-        // Ai actions and sequences without goals
-        //B.Execute(this);
-        //Sequence.ExecuteAll(this, B);
-
-
         //everything implemented code
-        TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
+        CheckEnemyflag();
 
         ActionSequence CurrentAction = TheAI.ChooseAction();
         CurrentAction.Execute(this);
-
+        Startcheck = true;
     }
 
     public AgentData GetData()
@@ -209,6 +260,108 @@ public class AI : MonoBehaviour
     public InventoryController GetInventory()
     {
         return _agentInventory;
+    }
+
+
+    //function checks to see the Ais health. if lower then a certain amount set it so the goal to get health it set
+    //this will also lower all other goals value as getting health is more important
+    public void CheckHealth()
+    {
+
+    }
+
+    //a function that checks the where abouts of the enemies flag.
+    //if it is in the enmies base they will attack
+    //if it isnt in the enemies base then they will defend
+    public void CheckEnemyflag()
+    {
+        //else check it its at home base
+        if (TheActions.CheckflagAtBase(_agentSenses, _agentData, HomeBase))
+        {
+            Debug.Log("finally");
+            TheAI.UpdateGoalValue(AIGoals.Guard, 3);
+            TheAI.UpdateGoalValue(AIGoals.attack, 0);
+        }
+        //check if i have the flag first cause if i do then return home
+        else if (_agentData.HasEnemyFlag)
+        {
+            
+            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
+            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 0);
+        }
+        // is the flag in a team mates possesion
+        else if (!_agentData.HasEnemyFlag)
+        {
+            
+            List<GameObject> TeamMembers;
+            TeamMembers = _agentSenses.GetFriendliesInView();
+
+            foreach(GameObject G in TeamMembers)
+            {
+                if(G.GetComponent<AgentData>().HasEnemyFlag)
+                {
+                    
+                    TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
+                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
+
+                }
+            }
+
+        }
+        //if its none of the above then its at the enemy base 
+        else
+        {
+            
+            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
+        }
+
+
+    }
+
+
+    public void OnTriggerStay(Collider other)
+    {
+        if (Startcheck)
+        {
+
+            if (other.CompareTag("BlueBase"))
+            {
+
+                if (gameObject.CompareTag("Blue Team"))
+                {
+
+                    if (TheActions.FindEnemyflag(_agentSenses, _agentData) || _agentData.HasEnemyFlag)
+                    {
+                        _agentActions.DropAllItems();
+
+                        if (TheAI.goallist.Count != 0)
+                        {
+
+                            TheAI.UpdateGoalValue(AIGoals.Guard, 5);
+                            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
+                        }
+
+                    }
+                }
+            }
+            else if (other.CompareTag("RedBase"))
+            {
+                if (gameObject.CompareTag("Red Team"))
+                {
+                    if (TheActions.FindEnemyflag(_agentSenses, _agentData))
+                    {
+                        if (TheAI.goallist.Count != 0)
+                        {
+                            TheActions.DropItemAtBase(HomeBase,this, _agentActions, true);
+                            TheAI.UpdateGoalValue(AIGoals.Guard, 5);
+                            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
+                        }
+                    }
+                }
+            }
+
+
+        }
     }
 
 }

@@ -36,6 +36,11 @@ public class Goals
         Gvalue = value;
     }
 
+    public void SubtractValue(float val)
+    {
+        Gvalue -= val;
+    }
+
     public float GetValue()
     {
         return Gvalue;
