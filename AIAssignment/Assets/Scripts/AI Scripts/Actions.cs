@@ -64,6 +64,8 @@ public class Actions
         //move home
         MoveHome(actions, HomeBase);
 
+        actions.DropAllItems();
+
         // if there are any enemies within view then they need to attack the enemy 
         Attack(sensing, actions);
 

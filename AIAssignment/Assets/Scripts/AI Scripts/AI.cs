@@ -133,7 +133,10 @@ public class AI : MonoBehaviour
     UtilityAI TheAI = new UtilityAI();
     void Awake()
     {
-        
+        if(this.CompareTag("Blue Team"))
+        HomeBase = GameObject.FindGameObjectWithTag("BlueBase");
+        else
+            HomeBase = GameObject.FindGameObjectWithTag("RedBase");
 
 
         //goal One go get Flag and Bring it back
@@ -275,93 +278,113 @@ public class AI : MonoBehaviour
     //if it isnt in the enemies base then they will defend
     public void CheckEnemyflag()
     {
-        //else check it its at home base
-        if (TheActions.CheckflagAtBase(_agentSenses, _agentData, HomeBase))
-        {
-            Debug.Log("finally");
-            TheAI.UpdateGoalValue(AIGoals.Guard, 3);
-            TheAI.UpdateGoalValue(AIGoals.attack, 0);
-        }
-        //check if i have the flag first cause if i do then return home
-        else if (_agentData.HasEnemyFlag)
-        {
-            
-            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
-            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 0);
-        }
-        // is the flag in a team mates possesion
-        else if (!_agentData.HasEnemyFlag)
-        {
-            
-            List<GameObject> TeamMembers;
-            TeamMembers = _agentSenses.GetFriendliesInView();
+        ////else check it its at home base
+        //if (TheActions.CheckflagAtBase(_agentSenses, _agentData, HomeBase))
+        //{
+        //    Debug.Log("finally");
+        //    TheAI.UpdateGoalValue(AIGoals.Guard, 3);
+        //    TheAI.UpdateGoalValue(AIGoals.attack, 0);
+        //}
+        ////check if i have the flag first cause if i do then return home
+        //else if (_agentData.HasEnemyFlag)
+        //{
+        //    
+        //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
+        //    TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 0);
+        //}
+        //// is the flag in a team mates possesion
+        //else if (!_agentData.HasEnemyFlag)
+        //{
+        //    
+        //    List<GameObject> TeamMembers;
+        //    TeamMembers = _agentSenses.GetFriendliesInView();
+        //
+        //    foreach(GameObject G in TeamMembers)
+        //    {
+        //        if(G.GetComponent<AgentData>().HasEnemyFlag)
+        //        {
+        //            
+        //            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
+        //            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
+        //
+        //        }
+        //    }
+        //
+        //}
+        ////if its none of the above then its at the enemy base 
+        //else
+        //{
+        //    
+        //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
+        //}
 
-            foreach(GameObject G in TeamMembers)
+        //testing for blue team if they have their own flag
+        if (this.CompareTag("Blue Team"))
+        {
+            Debug.Log(HomeBase.GetComponent<BaseState>().HasBlueFlag);
+            Debug.Log(HomeBase.GetComponent<BaseState>().HasRedFlag);
+
+            if (HomeBase.GetComponent<BaseState>().HasBlueFlag)
             {
-                if(G.GetComponent<AgentData>().HasEnemyFlag)
-                {
-                    
-                    TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
-                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
-
-                }
+                TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
+            }
+            else if(HomeBase.GetComponent<BaseState>().HasRedFlag)
+            {
+                Debug.Log("Should be guarding");
+                TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
+                TheAI.UpdateGoalValue(AIGoals.Guard, 5);
             }
 
         }
-        //if its none of the above then its at the enemy base 
-        else
-        {
-            
-            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
-        }
-
 
     }
 
 
     public void OnTriggerStay(Collider other)
     {
-        if (Startcheck)
-        {
-
-            if (other.CompareTag("BlueBase"))
-            {
-
-                if (gameObject.CompareTag("Blue Team"))
-                {
-
-                    if (TheActions.FindEnemyflag(_agentSenses, _agentData) || _agentData.HasEnemyFlag)
-                    {
-                        _agentActions.DropAllItems();
-
-                        if (TheAI.goallist.Count != 0)
-                        {
-
-                            TheAI.UpdateGoalValue(AIGoals.Guard, 5);
-                            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
-                        }
-
-                    }
-                }
-            }
-            else if (other.CompareTag("RedBase"))
-            {
-                if (gameObject.CompareTag("Red Team"))
-                {
-                    if (TheActions.FindEnemyflag(_agentSenses, _agentData))
-                    {
-                        if (TheAI.goallist.Count != 0)
-                        {
-                            TheActions.DropItemAtBase(HomeBase,this, _agentActions, true);
-                            TheAI.UpdateGoalValue(AIGoals.Guard, 5);
-                            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
-                        }
-                    }
-                }
-            }
-
-
-        }
+        //if (Startcheck)
+        //{
+        //
+        //    if (other.CompareTag("BlueBase"))
+        //    {
+        //
+        //        if (gameObject.CompareTag("Blue Team"))
+        //        {
+        //
+        //            if (TheActions.FindEnemyflag(_agentSenses, _agentData) || _agentData.HasEnemyFlag)
+        //            {
+        //                
+        //
+        //                if (TheAI.goallist.Count != 0)
+        //                {
+        //                    _agentActions.DropAllItems();
+        //                    //TheActions.DropItemAtBase(HomeBase, this, _agentActions, true);
+        //                    TheAI.UpdateGoalValue(AIGoals.Guard, 5);
+        //                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
+        //                }
+        //
+        //            }
+        //        }
+        //    }
+        //    else if (other.CompareTag("RedBase"))
+        //    {
+        //        if (gameObject.CompareTag("Red Team"))
+        //        {
+        //            if (TheActions.FindEnemyflag(_agentSenses, _agentData))
+        //            {
+        //                if (TheAI.goallist.Count != 0)
+        //                {
+        //                    _agentActions.DropAllItems();
+        //                    //TheActions.DropItemAtBase(HomeBase,this, _agentActions, true);
+        //                    TheAI.UpdateGoalValue(AIGoals.Guard, 5);
+        //                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
+        //                }
+        //            }
+        //        }
+        //    }
+        //
+        //
+        //}
     }
 
 }
