@@ -97,9 +97,9 @@ public class Actions
         return false;
     }
 
-    public bool FindHealthKit(AgentActions actions, Sensing sensing, AgentData data)
+    public bool FindHealthKit(AgentActions actions, Sensing sensing, AgentData data, GameObject HealthZone)
     {
-        
+        actions.MoveTo(HealthZone);
         //actions.PauseMovement();
 
        if(sensing.GetCollectablesInView().Count >= 1)
@@ -122,16 +122,10 @@ public class Actions
                         actions.MoveTo(objects[i]);
                     }
                 }
-                else
-                {
-                    actions.MoveToRandomLocation();
-                }
+                
             }
        }
-       else
-       {
-            actions.MoveToRandomLocation();
-        }
+       
 
 
         
@@ -506,6 +500,15 @@ public class TheAction : ActionBase
                            action.ProtectTeamMate(TheAi.GetSensing(), TheAi.GetData(), TheAi.GetActions());
                            break;
                        }
+                case ("Flee"):
+                    {
+                        break;
+                    }
+                case ("Heal"):
+                    {
+                        break;
+                    }
+
                     default:
                         break;
                 }
