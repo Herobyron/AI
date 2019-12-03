@@ -82,13 +82,13 @@ public class Actions
         return true;
     }
 
-    public bool LowHealth(AgentData data, AgentActions actions, Sensing sensing, bool Retreated)
+    public bool LowHealth(AgentData data, AgentActions actions, Sensing sensing, bool Retreated, bool HealthZone)
     {
         if(data.CurrentHitPoints < 15)
         { 
             if(sensing.GetEnemiesInView().Count == 0)
             {
-                Fleeing(actions, Retreated, data);
+                Fleeing(actions, data, sensing, HealthZone);
                 return true;
             }
 
@@ -102,8 +102,7 @@ public class Actions
         actions.MoveTo(HealthZone);
         //actions.PauseMovement();
 
-       if(sensing.GetCollectablesInView().Count >= 1)
-       {
+       
             // need to make this so that it only uses move to random once so it can actually move
 
             List<GameObject> objects = sensing.GetCollectablesInView();
@@ -117,18 +116,10 @@ public class Actions
                     {
                         objects[i].GetComponent<HealthKit>().Use(data);
                     }
-                    else
-                    {
-                        actions.MoveTo(objects[i]);
-                    }
+                    
                 }
                 
             }
-       }
-       
-
-
-        
 
         return true;
     }
@@ -186,6 +177,51 @@ public class Actions
         return false;
     }
 
+    public bool RetrieveFlag(Sensing sight, AgentActions actions, AgentData data, GameObject HomeBase)
+    {
+        List<GameObject> Temp = new List<GameObject>();
+        
+        foreach(GameObject G in sight.GetObjectsInViewByTag("Flag"))
+        {
+            Temp.Add(G);
+        }
+
+        for(int i = 0; i < Temp.Count; ++i)
+        {
+            if (Temp[i].name == "Red Flag") //checks to make sure the item within range is the red flag
+            {
+
+
+                if (data.FriendlyTeamTag == "Red Team")
+                {
+                    //when the Ai is within view distance
+                    actions.MoveTo(Temp[i]);
+                    // then it collects the item
+                    actions.CollectItem(Temp[i]);
+
+                }
+            }
+            else if (Temp[i].name == "Blue Flag") //checks to make sure the item within range is the blue flag
+            {
+
+
+                if (data.FriendlyTeamTag == "Blue Team")
+                {
+                    //when the Ai is within view distance
+                    actions.MoveTo(Temp[i]);
+                    // then it collects the item
+                    actions.CollectItem(Temp[i]);
+
+                }
+            }
+        }
+
+        MoveHome(actions, HomeBase);
+
+        return true;
+    }
+
+
     public  void Attack(Sensing view, AgentActions action)
     {
         
@@ -203,20 +239,39 @@ public class Actions
         
     }
 
-    public bool Fleeing(AgentActions actions, bool retreated, AgentData data)
+    public bool Fleeing(AgentActions actions, AgentData data, Sensing sensing, bool HealthZone)
     {
-        if(!retreated)
+        List<GameObject> objects = sensing.GetCollectablesInView();
+
+        for (int i = 0; i < objects.Count; i++)
+        {
+
+            if (objects[i].name == "Health Kit")
+            {
+                //if (sensing.IsItemInReach(objects[i]))
+                //{
+                    objects[i].GetComponent<HealthKit>().Use(data);
+                //}
+
+            }
+
+        }
+
+        if (!HealthZone)
         {
             if (data.FriendlyTeamTag == Tags.BlueTeam)
             {
-                actions.MoveTo(GameObject.FindGameObjectWithTag("BlueRetreatZone"));
+                actions.MoveTo(GameObject.FindGameObjectWithTag("HealthKit"));
             }
             else if (data.FriendlyTeamTag == Tags.RedTeam)
             {
-                actions.MoveTo(GameObject.FindGameObjectWithTag("RedRetreatZone"));
+                actions.MoveTo(GameObject.FindGameObjectWithTag("HealthKit"));
             }
-            
+
         }
+        
+
+
         return true;
 
     }
@@ -250,7 +305,7 @@ public class Actions
     {
         if(TheAi.transform.position.x == FriendlyBase.transform.position.x  || TheAi.transform.position.y == FriendlyBase.transform.position.y)
         {
-            if(flag)
+            
             TheActions.DropAllItems();
         }
 
@@ -500,14 +555,21 @@ public class TheAction : ActionBase
                            action.ProtectTeamMate(TheAi.GetSensing(), TheAi.GetData(), TheAi.GetActions());
                            break;
                        }
-                case ("Flee"):
-                    {
-                        break;
-                    }
-                case ("Heal"):
-                    {
-                        break;
-                    }
+                    case ("Flee"):
+                        {
+                            action.Fleeing(TheAi.GetActions(), TheAi.GetData(), TheAi.GetSensing(), TheAi.AtHealthZone);
+                            break;
+                        }
+                    case ("Heal"):
+                        {
+                            action.FindHealthKit(TheAi.GetActions(), TheAi.GetSensing(), TheAi.GetData(), TheAi.HealthZone);
+                            break;
+                        }
+                    case ("RetrieveFriendlyFlag"):
+                        {
+                            action.RetrieveFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData(), TheAi.HomeBase);
+                            break;
+                        }
 
                     default:
                         break;

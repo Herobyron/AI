@@ -78,7 +78,7 @@ using UnityEngine;
 /// </summary>
 /// 
 
-public enum AIGoals { CaptureFlag, retreat, attack, ProtectFriend, Guard };
+public enum AIGoals { CaptureFlag, retreat, attack, ProtectFriend, Guard, Retrive };
 
 
 public class AI : MonoBehaviour
@@ -98,6 +98,7 @@ public class AI : MonoBehaviour
     // refernces to gameobject in the world 
     public GameObject EnemyBase;
     public GameObject HomeBase;
+    public GameObject HealthZone;
 
     public int GuardspotNumber = 1;
     public GameObject FriendlyGuardSpotOne;
@@ -111,20 +112,37 @@ public class AI : MonoBehaviour
 
     public bool NeedsHealth = false;
 
+    public bool AtHealthZone = false;
+
     Actions TheActions = new Actions();
 
     //the Actions for the first Goal GoPickUpFlag
-    TheAction A;
-    TheAction B;
-    TheAction C;
-    TheAction D;
-    TheAction E;
+    TheAction CaptureFlagMove;
+    TheAction CaptureFlagAttack;
+    TheAction CaptureFlagPickUp;
+    TheAction CaptrueFlagMoveHome;
+    TheAction CaptureFlagDropFlag;
 
-    //the set of actions required for the second Goal
-    TheAction A2;
+    //the set of actions required for protecting your team mate
+    TheAction ProtectTeamMateAction;
+    TheAction AttackEnemy;
 
     //the set of actions for the third goal
-    TheAction A3;
+    TheAction GuardTheBase;
+    TheAction AttackEnemyAtBase;
+
+
+    //the set of actions Required to heal
+    TheAction RetreatToSaftey;
+    TheAction HealHealth;
+
+
+    //the set of actions to get back their flag
+    TheAction GetFlagMoveToEnemySide;
+    TheAction GetFlagRetrieveFlag;
+    TheAction GetFlagDrop;
+    TheAction GetFlagAttack;
+    TheAction GetFlagMoveHome;
 
     //refernce to calculate the utility value of each goal
     GoalValuefunction Valuefunctions = new GoalValuefunction();
@@ -136,66 +154,134 @@ public class AI : MonoBehaviour
     UtilityAI TheAI = new UtilityAI();
     void Awake()
     {
-        if(this.CompareTag("Blue Team"))
-        HomeBase = GameObject.FindGameObjectWithTag("BlueBase");
+        if (this.CompareTag("Blue Team"))
+        {
+            HomeBase = GameObject.FindGameObjectWithTag("BlueBase");
+        }
         else
+        {
             HomeBase = GameObject.FindGameObjectWithTag("RedBase");
-
-
-        //goal One go get Flag and Bring it back
+        }
+        ///////////////////////////////////////////
+        //goal One go get Flag and Bring it back//
         Goals GoPickUpFlag = new Goals(AIGoals.CaptureFlag, 0.0f, 10.0f, 0.0f, Valuefunctions);
 
         //actions included within the goal
-        A = new TheAction(TheActions, "MoveEnemySide", true, true, 0.0f, true);
-        A.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
+        CaptureFlagMove = new TheAction(TheActions, "MoveEnemySide", true, true, 0.0f, true);
+        CaptureFlagMove.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
 
-        B = new TheAction(TheActions, "Attack", false, true, 0.0f, false);
-        B.SetGoalSatisfaction(AIGoals.attack, 2);
+        CaptureFlagAttack = new TheAction(TheActions, "Attack", false, true, 0.0f, false);
+        CaptureFlagAttack.SetGoalSatisfaction(AIGoals.attack, 2);
 
-        C = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f, false);
-        C.SetGoalSatisfaction(AIGoals.CaptureFlag, 3);
+        CaptureFlagPickUp = new TheAction(TheActions, "PickUpFlag", true, true, 0.0f, false);
+        CaptureFlagPickUp.SetGoalSatisfaction(AIGoals.CaptureFlag, 3);
 
-        D = new TheAction(TheActions, "MoveHome", true, true, 0.0f, false);
-        D.SetGoalSatisfaction(AIGoals.CaptureFlag, 4);
+        CaptrueFlagMoveHome = new TheAction(TheActions, "MoveHome", true, true, 0.0f, false);
+        CaptrueFlagMoveHome.SetGoalSatisfaction(AIGoals.CaptureFlag, 4);
 
-        E = new TheAction(TheActions, "DropFlag", true, true, 0.0f, false);
-        E.SetGoalSatisfaction(AIGoals.CaptureFlag, 5);
+        CaptureFlagDropFlag = new TheAction(TheActions, "DropFlag", true, true, 0.0f, false);
+        CaptureFlagDropFlag.SetGoalSatisfaction(AIGoals.CaptureFlag, 5);
+
 
         //the actions sequence for the first goal
         ActionSequence Sequence = new ActionSequence();
-        Sequence.AddAction(A);
-        Sequence.AddAction(B);
-        Sequence.AddAction(C);
-        Sequence.AddAction(D);
-        Sequence.AddAction(E);
-
+        Sequence.AddAction(CaptureFlagMove);
+        Sequence.AddAction(CaptureFlagAttack);
+        Sequence.AddAction(CaptureFlagPickUp);
+        Sequence.AddAction(CaptrueFlagMoveHome);
+        Sequence.AddAction(CaptureFlagDropFlag);
         Sequence.SetGoalSatisfaction(AIGoals.CaptureFlag, 5);
+        //////////////////////////////////////////////////////////
 
-        //goal two protect the team mate with the flag
+
+
+        /////////////////////////////////////////////////
+        //goal two protect the team mate with the flag//
         Goals ProtectTeamMate = new Goals(AIGoals.ProtectFriend, 0.0f, 1.0f, 0.0f, Valuefunctions);
 
         // the unique actions for the second goal
-        A2 = new TheAction(TheActions, "ProtectTeamMateWithFlag", true, true, 0.0f, true);
-        A2.SetGoalSatisfaction(AIGoals.ProtectFriend, 1);
-        
+        ProtectTeamMateAction = new TheAction(TheActions, "ProtectTeamMateWithFlag", true, true, 0.0f, true);
+        ProtectTeamMateAction.SetGoalSatisfaction(AIGoals.ProtectFriend, 1);
+
+        AttackEnemy = new TheAction(TheActions, "Attack", false, true, 0.0f, false);
+        AttackEnemy.SetGoalSatisfaction(AIGoals.ProtectFriend, 1);
+
         // the action sequence for the second goal
         ActionSequence Sequence2 = new ActionSequence();
-        Sequence2.AddAction(A2);
-        Sequence2.AddAction(B);
+        Sequence2.AddAction(ProtectTeamMateAction);
+        Sequence2.AddAction(AttackEnemy);
         Sequence2.SetGoalSatisfaction(AIGoals.ProtectFriend, 5);
+        ////////////////////////////////////////////////////////
         
-        //goal to guard the base once you have the enemy flag
+
+        ///////////////////////////////////////////////////////
+        //goal to guard the base once you have the enemy flag//
         Goals GuardBase = new Goals(AIGoals.Guard ,0 ,5 ,0 ,Valuefunctions);
 
         //the actions unique included within the third goal
-        A3 = new TheAction(TheActions, "Guard", true, true, 0.0f, true);
-        A3.SetGoalSatisfaction(AIGoals.Guard, 1);
+        GuardTheBase = new TheAction(TheActions, "Guard", true, true, 0.0f, true);
+        GuardTheBase.SetGoalSatisfaction(AIGoals.Guard, 1);
 
+        AttackEnemyAtBase = new TheAction(TheActions, "Attack", true, true, 0.0f, false);
+        AttackEnemyAtBase.SetGoalSatisfaction(AIGoals.Guard, 1);
+
+        
         //the action sequence for the third goal
         ActionSequence Sequence3 = new ActionSequence();
-        Sequence3.AddAction(A3);
-        Sequence3.AddAction(B);
+        Sequence3.AddAction(GuardTheBase);
+        Sequence3.AddAction(AttackEnemyAtBase);
         Sequence3.SetGoalSatisfaction(AIGoals.Guard, 5);
+        //////////////////////////////////////////////////
+
+
+        //////////////////////////////////////
+        //goal four to flee and find health//
+        Goals FleeAndGetHealth = new Goals(AIGoals.retreat, 0, 10, 0, Valuefunctions);
+
+        // the actions that are needed for the fourth goal
+        RetreatToSaftey = new TheAction(TheActions, "Flee", false, false, 0.0f, true);
+        RetreatToSaftey.SetGoalSatisfaction(AIGoals.retreat, 5);
+
+        HealHealth = new TheAction(TheActions, "Heal", false, false, 0.0f, true);
+        HealHealth.SetGoalSatisfaction(AIGoals.retreat, 5);
+
+        ActionSequence Sequence4 = new ActionSequence();
+        Sequence4.AddAction(RetreatToSaftey);
+        //Sequence4.AddAction(HealHealth);
+        Sequence4.SetGoalSatisfaction(AIGoals.retreat, 10);
+        ///////////////////////////////////////////////////
+
+        /////////////////////////////////////////
+        ////change this it dosent work ???
+        //goal five to get back thier own flag//
+        Goals RetriveFlag = new Goals(AIGoals.Retrive, 0, 10, 0, Valuefunctions);
+
+        // The actions that are needed for the fifth action
+        GetFlagMoveToEnemySide = new TheAction(TheActions, "MoveEnemySide", false, true, 0, true);
+        GetFlagMoveToEnemySide.SetGoalSatisfaction(AIGoals.Retrive, 3);
+
+        GetFlagRetrieveFlag = new TheAction(TheActions, "RetrieveFriendlyFlag", false, false, 0.0f, false);
+        GetFlagRetrieveFlag.SetGoalSatisfaction(AIGoals.Retrive, 4);
+
+        GetFlagDrop = new TheAction(TheActions, "DropFlag", false, true, 0, false);
+        GetFlagDrop.SetGoalSatisfaction(AIGoals.Retrive, 3);
+
+        GetFlagAttack = new TheAction(TheActions, "Attack", false, true, 0, false);
+        GetFlagAttack.SetGoalSatisfaction(AIGoals.Retrive, 2);
+
+        GetFlagMoveHome = new TheAction(TheActions, "MoveHome", false, true, 0, false);
+        GetFlagMoveHome.SetGoalSatisfaction(AIGoals.Retrive, 2);
+
+
+        ActionSequence Sequence5 = new ActionSequence();
+        Sequence5.AddAction(GetFlagMoveToEnemySide);
+        Sequence5.AddAction(GetFlagRetrieveFlag);
+        Sequence5.AddAction(GetFlagAttack);
+        Sequence5.AddAction(GetFlagMoveHome);
+        //Sequence5.AddAction(GetFlagDrop);
+        Sequence5.SetGoalSatisfaction(AIGoals.Retrive, 10);
+        /////////////////////////////////////////////////////
+
 
         //adding the goals and actions to the AI
         TheAI.AddGoal(GoPickUpFlag);
@@ -204,6 +290,10 @@ public class AI : MonoBehaviour
         TheAI.AddAction(Sequence2);
         TheAI.AddGoal(GuardBase);
         TheAI.AddAction(Sequence3);
+        TheAI.AddGoal(FleeAndGetHealth);
+        TheAI.AddAction(Sequence4);
+        TheAI.AddGoal(RetriveFlag);
+        TheAI.AddAction(Sequence5);
     }
 
     // Use this for initialization
@@ -230,9 +320,6 @@ public class AI : MonoBehaviour
         }
 
 
-        //Sequence.AddAction(A);
-        //Sequence.AddAction(C);
-
     }
 
    
@@ -240,6 +327,8 @@ public class AI : MonoBehaviour
     // Update is called once per frame
     void Update ()
     {
+        ResetAllGoals();
+
         //everything implemented code
         CheckHealth();
         CheckEnemyflag();
@@ -275,11 +364,18 @@ public class AI : MonoBehaviour
     //this will also lower all other goals value as getting health is more important
     public void CheckHealth()
     {
-        if(_agentData.CurrentHitPoints < 30)
+        if(_agentData.CurrentHitPoints <= 40)
         {
+            Debug.Log("Health low Ouch");
+            NeedsHealth = true;
+            ResetAllGoals();
             TheAI.UpdateGoalValue(AIGoals.retreat, 10);
-            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
-
+        }
+        else
+        {
+            NeedsHealth = false;
+            ResetAllGoals();
+            TheAI.UpdateGoalValue(AIGoals.retreat, 0);
         }
     }
 
@@ -293,74 +389,142 @@ public class AI : MonoBehaviour
             //testing for blue team if they have their own flag
             if (this.CompareTag("Blue Team"))
             {
-                Debug.Log(HomeBase.GetComponent<BaseState>().HasBlueFlag);
-                Debug.Log(HomeBase.GetComponent<BaseState>().HasRedFlag);
-
-                if (HomeBase.GetComponent<BaseState>().HasBlueFlag)
+                //if (!HomeBase.GetComponent<BaseState>().HasBlueFlag && !_agentData.HasEnemyFlag)
+                //{
+                //    Debug.Log("Retrieving");
+                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
+                //    TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 0);
+                //    TheAI.UpdateGoalValue(AIGoals.Guard, 0);
+                //    TheAI.UpdateGoalValue(AIGoals.Retrive, 10);
+                //
+                //}
+                //else if (!_agentData.HasEnemyFlag)
+                //{
+                //    List<GameObject> TeamMembers;
+                //    TeamMembers = _agentSenses.GetFriendliesInView();
+                //
+                //    foreach (GameObject G in TeamMembers)
+                //    {
+                //        if (G.GetComponent<AgentData>().HasEnemyFlag)
+                //        {
+                //
+                //            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
+                //            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
+                //
+                //        }
+                //    }
+                //}
+                //else if (HomeBase.GetComponent<BaseState>().HasBlueFlag)
+                //{
+                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
+                //
+                //}
+                //else if (HomeBase.GetComponent<BaseState>().HasRedFlag && HomeBase.GetComponent<BaseState>().HasBlueFlag)
+                //{
+                //    Debug.Log("Should be guarding");
+                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
+                //    TheAI.UpdateGoalValue(AIGoals.Guard, 5);
+                //}
+                
+            //first test to see if both the flags are at home base
+                if(HomeBase.GetComponent<BaseState>().HasBlueFlag && HomeBase.GetComponent<BaseState>().HasRedFlag)
                 {
-                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
-
+                    Debug.Log("Guarding");
+                        ResetAllGoals();
+                        TheAI.UpdateGoalValue(AIGoals.Guard, 5);
                 }
-                else if (HomeBase.GetComponent<BaseState>().HasRedFlag)
+                else if(HomeBase.GetComponent<BaseState>().HasBlueFlag)
                 {
-                    Debug.Log("Should be guarding");
-                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
-                    TheAI.UpdateGoalValue(AIGoals.Guard, 5);
+                    Debug.Log("Capture Flag");
+                    ResetAllGoals();
+                        TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 5);
                 }
-                else if (!_agentData.HasEnemyFlag)
+                else
                 {
-                    List<GameObject> TeamMembers;
-                    TeamMembers = _agentSenses.GetFriendliesInView();
-
-                    foreach (GameObject G in TeamMembers)
-                    {
-                        if (G.GetComponent<AgentData>().HasEnemyFlag)
-                        {
-
-                            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
-                            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
-
-                        }
-                    }
+                    Debug.Log("Retrieve flag");
+                    ResetAllGoals();
+                    TheAI.UpdateGoalValue(AIGoals.Retrive, 5);
                 }
+
+
+
 
             }
             else if (this.CompareTag("Red Team"))
             {
-                if (HomeBase.GetComponent<BaseState>().HasRedFlag)
+                //if(!HomeBase.GetComponent<BaseState>().HasRedFlag)
+                //{
+                //    Debug.Log("Retrieving");
+                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
+                //    TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 0);
+                //    TheAI.UpdateGoalValue(AIGoals.Guard, 0);
+                //    TheAI.UpdateGoalValue(AIGoals.Retrive, 10);
+                //}
+                //else if (HomeBase.GetComponent<BaseState>().HasRedFlag)
+                //{
+                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
+                //
+                //}
+                //else if (HomeBase.GetComponent<BaseState>().HasBlueFlag && HomeBase.GetComponent<BaseState>().HasRedFlag)
+                //{
+                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
+                //    TheAI.UpdateGoalValue(AIGoals.Guard, 2);
+                //}
+                //else if (!_agentData.HasEnemyFlag)
+                //{
+                //    List<GameObject> TeamMembers;
+                //    TeamMembers = _agentSenses.GetFriendliesInView();
+                //
+                //    foreach (GameObject G in TeamMembers)
+                //    {
+                //        if (G.GetComponent<AgentData>().HasEnemyFlag)
+                //        {
+                //
+                //            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
+                //            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
+                //
+                //        }
+                //
+                //    }
+                //
+                //
+                //
+                //}
+
+                if (HomeBase.GetComponent<BaseState>().HasBlueFlag && HomeBase.GetComponent<BaseState>().HasRedFlag)
                 {
-                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
-
+                    Debug.Log("Guarding");
+                    ResetAllGoals();
+                    TheAI.UpdateGoalValue(AIGoals.Guard, 5);
                 }
-                else if (HomeBase.GetComponent<BaseState>().HasBlueFlag)
+                else if (HomeBase.GetComponent<BaseState>().HasRedFlag)
                 {
-                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
-                    TheAI.UpdateGoalValue(AIGoals.Guard, 2);
+                    Debug.Log("Capture Flag");
+                    ResetAllGoals();
+                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 5);
                 }
-                else if (!_agentData.HasEnemyFlag)
+                else
                 {
-                    List<GameObject> TeamMembers;
-                    TeamMembers = _agentSenses.GetFriendliesInView();
-
-                    foreach (GameObject G in TeamMembers)
-                    {
-                        if (G.GetComponent<AgentData>().HasEnemyFlag)
-                        {
-
-                            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
-                            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
-
-                        }
-
-                    }
-
-
-
+                    Debug.Log("Retrieve flag");
+                    ResetAllGoals();
+                    TheAI.UpdateGoalValue(AIGoals.Retrive, 5);
                 }
+
+
+
             }
         }
 
     }
 
+
+    public void ResetAllGoals()
+    {
+        TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
+        TheAI.UpdateGoalValue(AIGoals.Guard, -10);
+        TheAI.UpdateGoalValue(AIGoals.ProtectFriend, -10);
+        TheAI.UpdateGoalValue(AIGoals.retreat, -10);
+        TheAI.UpdateGoalValue(AIGoals.Retrive, -10);
+    }
 
 }

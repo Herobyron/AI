@@ -18,7 +18,7 @@ public class FleeZone : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        other.GetComponent<AI>().Retreated = true;
+        //other.GetComponent<AI>().Retreated = true;
     }
 
 
