@@ -105,6 +105,7 @@ public class AI : MonoBehaviour
     public GameObject FreindlyGuardSpotTwo;
 
     public bool GotEnemyflag = false;
+    public bool GotFriendlyFlag = false;
 
     public bool Startcheck = false;
 
@@ -113,6 +114,9 @@ public class AI : MonoBehaviour
     public bool NeedsHealth = false;
 
     public bool AtHealthZone = false;
+
+    public bool Follow = false; 
+
 
     Actions TheActions = new Actions();
 
@@ -252,33 +256,32 @@ public class AI : MonoBehaviour
         ///////////////////////////////////////////////////
 
         /////////////////////////////////////////
-        ////change this it dosent work ???
         //goal five to get back thier own flag//
         Goals RetriveFlag = new Goals(AIGoals.Retrive, 0, 10, 0, Valuefunctions);
 
         // The actions that are needed for the fifth action
         GetFlagMoveToEnemySide = new TheAction(TheActions, "MoveEnemySide", false, true, 0, true);
         GetFlagMoveToEnemySide.SetGoalSatisfaction(AIGoals.Retrive, 3);
-
+        
         GetFlagRetrieveFlag = new TheAction(TheActions, "RetrieveFriendlyFlag", false, false, 0.0f, false);
         GetFlagRetrieveFlag.SetGoalSatisfaction(AIGoals.Retrive, 4);
-
+        
         GetFlagDrop = new TheAction(TheActions, "DropFlag", false, true, 0, false);
         GetFlagDrop.SetGoalSatisfaction(AIGoals.Retrive, 3);
-
+        
         GetFlagAttack = new TheAction(TheActions, "Attack", false, true, 0, false);
         GetFlagAttack.SetGoalSatisfaction(AIGoals.Retrive, 2);
-
-        GetFlagMoveHome = new TheAction(TheActions, "MoveHome", false, true, 0, false);
+        
+        GetFlagMoveHome = new TheAction(TheActions, "MoveHomeWithFriendlyFlag", false, true, 0, false);
         GetFlagMoveHome.SetGoalSatisfaction(AIGoals.Retrive, 2);
-
-
+        
+        
         ActionSequence Sequence5 = new ActionSequence();
         Sequence5.AddAction(GetFlagMoveToEnemySide);
         Sequence5.AddAction(GetFlagRetrieveFlag);
         Sequence5.AddAction(GetFlagAttack);
         Sequence5.AddAction(GetFlagMoveHome);
-        //Sequence5.AddAction(GetFlagDrop);
+        Sequence5.AddAction(GetFlagDrop);
         Sequence5.SetGoalSatisfaction(AIGoals.Retrive, 10);
         /////////////////////////////////////////////////////
 
@@ -331,8 +334,12 @@ public class AI : MonoBehaviour
 
         //everything implemented code
         CheckHealth();
-        CheckEnemyflag();
-
+        if (!NeedsHealth)
+        {
+            CheckTeamMates();
+            if(!Follow)
+            CheckEnemyflag();
+        }
         ActionSequence CurrentAction = TheAI.ChooseAction();
         CurrentAction.Execute(this);
         
@@ -357,6 +364,28 @@ public class AI : MonoBehaviour
     public InventoryController GetInventory()
     {
         return _agentInventory;
+    }
+
+
+    public void CheckTeamMates()
+    {
+            ResetAllGoals();
+            List<GameObject> TeamMembers;
+            TeamMembers = _agentSenses.GetFriendliesInView();
+        
+            foreach (GameObject G in TeamMembers)
+            {
+                if (G.GetComponent<AgentData>().HasEnemyFlag)
+                {
+        
+                    TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
+                    ResetAllGoals();
+                    Follow = true;
+        
+                }
+            }
+
+        Follow = false;
     }
 
 
@@ -389,44 +418,7 @@ public class AI : MonoBehaviour
             //testing for blue team if they have their own flag
             if (this.CompareTag("Blue Team"))
             {
-                //if (!HomeBase.GetComponent<BaseState>().HasBlueFlag && !_agentData.HasEnemyFlag)
-                //{
-                //    Debug.Log("Retrieving");
-                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
-                //    TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 0);
-                //    TheAI.UpdateGoalValue(AIGoals.Guard, 0);
-                //    TheAI.UpdateGoalValue(AIGoals.Retrive, 10);
-                //
-                //}
-                //else if (!_agentData.HasEnemyFlag)
-                //{
-                //    List<GameObject> TeamMembers;
-                //    TeamMembers = _agentSenses.GetFriendliesInView();
-                //
-                //    foreach (GameObject G in TeamMembers)
-                //    {
-                //        if (G.GetComponent<AgentData>().HasEnemyFlag)
-                //        {
-                //
-                //            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
-                //            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
-                //
-                //        }
-                //    }
-                //}
-                //else if (HomeBase.GetComponent<BaseState>().HasBlueFlag)
-                //{
-                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
-                //
-                //}
-                //else if (HomeBase.GetComponent<BaseState>().HasRedFlag && HomeBase.GetComponent<BaseState>().HasBlueFlag)
-                //{
-                //    Debug.Log("Should be guarding");
-                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
-                //    TheAI.UpdateGoalValue(AIGoals.Guard, 5);
-                //}
-                
-            //first test to see if both the flags are at home base
+                //first test to see if both the flags are at home base
                 if(HomeBase.GetComponent<BaseState>().HasBlueFlag && HomeBase.GetComponent<BaseState>().HasRedFlag)
                 {
                     Debug.Log("Guarding");
@@ -452,44 +444,6 @@ public class AI : MonoBehaviour
             }
             else if (this.CompareTag("Red Team"))
             {
-                //if(!HomeBase.GetComponent<BaseState>().HasRedFlag)
-                //{
-                //    Debug.Log("Retrieving");
-                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
-                //    TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 0);
-                //    TheAI.UpdateGoalValue(AIGoals.Guard, 0);
-                //    TheAI.UpdateGoalValue(AIGoals.Retrive, 10);
-                //}
-                //else if (HomeBase.GetComponent<BaseState>().HasRedFlag)
-                //{
-                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 2);
-                //
-                //}
-                //else if (HomeBase.GetComponent<BaseState>().HasBlueFlag && HomeBase.GetComponent<BaseState>().HasRedFlag)
-                //{
-                //    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
-                //    TheAI.UpdateGoalValue(AIGoals.Guard, 2);
-                //}
-                //else if (!_agentData.HasEnemyFlag)
-                //{
-                //    List<GameObject> TeamMembers;
-                //    TeamMembers = _agentSenses.GetFriendliesInView();
-                //
-                //    foreach (GameObject G in TeamMembers)
-                //    {
-                //        if (G.GetComponent<AgentData>().HasEnemyFlag)
-                //        {
-                //
-                //            TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
-                //            TheAI.UpdateGoalValue(AIGoals.CaptureFlag, 0);
-                //
-                //        }
-                //
-                //    }
-                //
-                //
-                //
-                //}
 
                 if (HomeBase.GetComponent<BaseState>().HasBlueFlag && HomeBase.GetComponent<BaseState>().HasRedFlag)
                 {

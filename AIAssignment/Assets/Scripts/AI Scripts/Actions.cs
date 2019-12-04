@@ -17,6 +17,15 @@ public class Actions
         return true;
     }
 
+    public bool MoveHomeWithOurFlag(AgentActions actions, GameObject HomeBase, bool flag)
+    {
+
+        if (flag)
+            actions.MoveTo(HomeBase);
+
+        return true;
+    }
+
     public bool MoveHome(AgentActions actions, GameObject HomeBase)
     {
         
@@ -27,10 +36,10 @@ public class Actions
 
     public bool MoveHomeWithFlag(AgentActions actions, GameObject Homebase, bool flag)
     {
+      
         if(flag)
-        {
             actions.MoveTo(Homebase);
-        }
+        
 
         return true;
     }
@@ -177,7 +186,7 @@ public class Actions
         return false;
     }
 
-    public bool RetrieveFlag(Sensing sight, AgentActions actions, AgentData data, GameObject HomeBase)
+    public bool RetrieveFlag(Sensing sight, AgentActions actions, AgentData data, AI theai)
     {
         List<GameObject> Temp = new List<GameObject>();
         
@@ -198,7 +207,7 @@ public class Actions
                     actions.MoveTo(Temp[i]);
                     // then it collects the item
                     actions.CollectItem(Temp[i]);
-
+                   
                 }
             }
             else if (Temp[i].name == "Blue Flag") //checks to make sure the item within range is the blue flag
@@ -211,12 +220,15 @@ public class Actions
                     actions.MoveTo(Temp[i]);
                     // then it collects the item
                     actions.CollectItem(Temp[i]);
-
+                   
                 }
             }
         }
 
-        MoveHome(actions, HomeBase);
+        if (data.HasFriendlyFlag)
+        {
+            theai.GotFriendlyFlag = true;
+        }
 
         return true;
     }
@@ -545,6 +557,11 @@ public class TheAction : ActionBase
                             action.MoveHomeWithFlag(TheAi.GetActions(), TheAi.HomeBase, TheAi.GotEnemyflag);
                             break;
                         }
+                    case ("MoveHomeWithFriendlyFlag"):
+                        {
+                            action.MoveHomeWithOurFlag(TheAi.GetActions(), TheAi.HomeBase, TheAi.GotFriendlyFlag);
+                            break;
+                        }
                    case ("DropFlag"):
                        {
                            action.DropItemAtBase(TheAi.HomeBase, TheAi, TheAi.GetActions(), TheAi.GotEnemyflag);
@@ -567,7 +584,7 @@ public class TheAction : ActionBase
                         }
                     case ("RetrieveFriendlyFlag"):
                         {
-                            action.RetrieveFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData(), TheAi.HomeBase);
+                            action.RetrieveFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData(), TheAi);
                             break;
                         }
 
