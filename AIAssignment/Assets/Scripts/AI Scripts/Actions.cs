@@ -133,6 +133,9 @@ public class Actions
         return true;
     }
 
+    
+
+
     public bool PickUpFlag(Sensing sight, AgentActions actions, AgentData data)
     {
 
@@ -247,7 +250,6 @@ public class Actions
        }
 
        //need to resume movement when enemyes are dead
-        //action.ResumeMovement();
         
     }
 
@@ -260,10 +262,9 @@ public class Actions
 
             if (objects[i].name == "Health Kit")
             {
-                //if (sensing.IsItemInReach(objects[i]))
-                //{
+               
                     objects[i].GetComponent<HealthKit>().Use(data);
-                //}
+                
 
             }
 
@@ -288,7 +289,43 @@ public class Actions
 
     }
 
-    
+
+    public bool FindPowerUp(Sensing sense, AgentData data, AgentActions actions, bool PowerUpZone)
+    {
+
+        List<GameObject> objects = sense.GetCollectablesInView();
+
+        for (int i = 0; i < objects.Count; i++)
+        {
+
+            if (objects[i].name == "Power Up")
+            {
+                if (sense.IsItemInReach(objects[i]))
+                {
+                    objects[i].GetComponent<PowerUp>().Use(data);
+                }
+
+            }
+
+        }
+
+        if (!PowerUpZone)
+        {
+            if (data.FriendlyTeamTag == Tags.BlueTeam)
+            {
+                actions.MoveTo(GameObject.FindGameObjectWithTag("Powerup"));
+            }
+            else if (data.FriendlyTeamTag == Tags.RedTeam)
+            {
+                actions.MoveTo(GameObject.FindGameObjectWithTag("Powerup"));
+            }
+
+        }
+
+        return true;
+    }
+
+
     public bool FindEnemyflag(Sensing sight, AgentData data)
     {
         //gets a list of the items within view
@@ -585,6 +622,11 @@ public class TheAction : ActionBase
                     case ("RetrieveFriendlyFlag"):
                         {
                             action.RetrieveFlag(TheAi.GetSensing(), TheAi.GetActions(), TheAi.GetData(), TheAi);
+                            break;
+                        }
+                    case ("GetPowerUp"):
+                        {
+                            action.FindPowerUp(TheAi.GetSensing(), TheAi.GetData(), TheAi.GetActions(), TheAi.AtPowerUpZone);
                             break;
                         }
 

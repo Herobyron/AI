@@ -78,7 +78,7 @@ using UnityEngine;
 /// </summary>
 /// 
 
-public enum AIGoals { CaptureFlag, retreat, attack, ProtectFriend, Guard, Retrive };
+public enum AIGoals { CaptureFlag, retreat, attack, ProtectFriend, Guard, Retrive, PowerUp };
 
 
 public class AI : MonoBehaviour
@@ -114,6 +114,9 @@ public class AI : MonoBehaviour
     public bool NeedsHealth = false;
 
     public bool AtHealthZone = false;
+    public bool AtPowerUpZone = false;
+
+    public bool PoweringUp = false;
 
     public bool Follow = false; 
 
@@ -147,6 +150,10 @@ public class AI : MonoBehaviour
     TheAction GetFlagDrop;
     TheAction GetFlagAttack;
     TheAction GetFlagMoveHome;
+
+
+    //final set of actions
+    TheAction PickUpPowerUp;
 
     //refernce to calculate the utility value of each goal
     GoalValuefunction Valuefunctions = new GoalValuefunction();
@@ -274,16 +281,29 @@ public class AI : MonoBehaviour
         
         GetFlagMoveHome = new TheAction(TheActions, "MoveHomeWithFriendlyFlag", false, true, 0, false);
         GetFlagMoveHome.SetGoalSatisfaction(AIGoals.Retrive, 2);
-        
-        
+
         ActionSequence Sequence5 = new ActionSequence();
         Sequence5.AddAction(GetFlagMoveToEnemySide);
         Sequence5.AddAction(GetFlagRetrieveFlag);
         Sequence5.AddAction(GetFlagAttack);
         Sequence5.AddAction(GetFlagMoveHome);
         Sequence5.AddAction(GetFlagDrop);
+
         Sequence5.SetGoalSatisfaction(AIGoals.Retrive, 10);
         /////////////////////////////////////////////////////
+
+        //Goal Six to pick up power Up//
+
+        Goals GetPowerUp = new Goals(AIGoals.PowerUp, 0, 10, 0, Valuefunctions);
+
+
+        PickUpPowerUp = new TheAction(TheActions, "GetPowerUp", true, true, 0, false);
+        PickUpPowerUp.SetGoalSatisfaction(AIGoals.PowerUp, 2);
+        /////////////////////////////////////////////////////
+
+        ActionSequence Sequence6 = new ActionSequence();
+        Sequence6.AddAction(PickUpPowerUp);
+        Sequence6.SetGoalSatisfaction(AIGoals.PowerUp, 10);
 
 
         //adding the goals and actions to the AI
@@ -297,6 +317,8 @@ public class AI : MonoBehaviour
         TheAI.AddAction(Sequence4);
         TheAI.AddGoal(RetriveFlag);
         TheAI.AddAction(Sequence5);
+        TheAI.AddGoal(GetPowerUp);
+        TheAI.AddAction(Sequence6);
     }
 
     // Use this for initialization
@@ -325,21 +347,31 @@ public class AI : MonoBehaviour
 
     }
 
-   
+
 
     // Update is called once per frame
-    void Update ()
+    void Update()
     {
         ResetAllGoals();
-
-        //everything implemented code
         CheckHealth();
+
+        if (_agentSenses.GetObjectInViewByName("Power Up"))
+        {
+            TheAI.UpdateGoalValue(AIGoals.PowerUp, 10);
+            
+        }
+        else
+        {
+            CheckEnemyflag();
+            TheAI.UpdateGoalValue(AIGoals.PowerUp, -10);
+        }
+        
         if (!NeedsHealth)
         {
-            CheckTeamMates();
-            if(!Follow)
+            
             CheckEnemyflag();
         }
+
         ActionSequence CurrentAction = TheAI.ChooseAction();
         CurrentAction.Execute(this);
         
@@ -377,15 +409,15 @@ public class AI : MonoBehaviour
             {
                 if (G.GetComponent<AgentData>().HasEnemyFlag)
                 {
-        
+                    Debug.Log("Team Mate has flag");
                     TheAI.UpdateGoalValue(AIGoals.ProtectFriend, 5);
-                    ResetAllGoals();
+                    TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);
                     Follow = true;
         
                 }
             }
 
-        Follow = false;
+        //Follow = false;
     }
 
 

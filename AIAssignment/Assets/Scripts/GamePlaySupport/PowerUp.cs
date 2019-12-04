@@ -18,7 +18,8 @@ public class PowerUp : Collectable, IUsable
     public void Use(AgentData agentData)
     {
         agentData.PowerUp(PowerUpAmount);
-        StartCoroutine(PowerUpTimer(agentData));
+        Destroy(gameObject);
+        //StartCoroutine(PowerUpTimer(agentData));
     }
 
     /// <summary>
