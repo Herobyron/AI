@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class Actions
 {
-    
-
-
-
     // these will be the actions that the AI can execute
     //actions return true or false to determine wether they have finished exectuing. for example you dont want the attcaker to hit once then just stop. it needs to loop until enemy is dead
+
+
+
+    // this action allows the AI to move to the Enemy side
     public bool MoveToEnemyside(AgentActions actions, GameObject enemybase)
     {
         actions.MoveTo(enemybase);
@@ -17,6 +17,7 @@ public class Actions
         return true;
     }
 
+    // an action to determine if we have the flag if we do then we will begin to move home
     public bool MoveHomeWithOurFlag(AgentActions actions, GameObject HomeBase, bool flag)
     {
 
@@ -26,6 +27,7 @@ public class Actions
         return true;
     }
 
+    // a function that allows the Ai to mvoe home 
     public bool MoveHome(AgentActions actions, GameObject HomeBase)
     {
         
@@ -34,6 +36,7 @@ public class Actions
         return true;
     }
 
+    // another function needed for moving home but this time with a non specified flag
     public bool MoveHomeWithFlag(AgentActions actions, GameObject Homebase, bool flag)
     {
       
@@ -67,7 +70,7 @@ public class Actions
         return true;
     }
 
-
+    //a function that allowed the AI to guard their base when they had both of thier flags within the base
     public bool Gaurd(AgentActions actions, Sensing sensing, AgentData data, GameObject HomeBase, GameObject GuardSpotOne, GameObject GuardSpotTwo, int GuardSpotNumber)
     {
         //move home
@@ -91,6 +94,7 @@ public class Actions
         return true;
     }
 
+    // a function that checks to see if the Ai has low health and if they do they will begin to flee
     public bool LowHealth(AgentData data, AgentActions actions, Sensing sensing, bool Retreated, bool HealthZone)
     {
         if(data.CurrentHitPoints < 15)
@@ -106,6 +110,7 @@ public class Actions
         return false;
     }
 
+    // a function that allows the aI to be able to find the health kit and if it is within reach range then the ai will use it. if not they will then begin to move up to it
     public bool FindHealthKit(AgentActions actions, Sensing sensing, AgentData data, GameObject HealthZone)
     {
         actions.MoveTo(HealthZone);
@@ -135,7 +140,7 @@ public class Actions
 
     
 
-
+    // a function that allows the ai to pick up a flag if they are close enough and see it within view
     public bool PickUpFlag(Sensing sight, AgentActions actions, AgentData data)
     {
 
@@ -189,6 +194,7 @@ public class Actions
         return false;
     }
 
+    // a function that gets the ai to try and get thier own flag back and return it to thier base
     public bool RetrieveFlag(Sensing sight, AgentActions actions, AgentData data, AI theai)
     {
         List<GameObject> Temp = new List<GameObject>();
@@ -236,7 +242,7 @@ public class Actions
         return true;
     }
 
-
+    // a function that allows the Ai to check to see if there are enemys near by. if there are then they will begin to move to wards them and attack. slowing down when they get close enough to attack
     public  void Attack(Sensing view, AgentActions action)
     {
         
@@ -253,6 +259,7 @@ public class Actions
         
     }
 
+    // a function that once the Ai becomes low on health they will begin to move away from the fight and is they see the health kit within view then they will use it
     public bool Fleeing(AgentActions actions, AgentData data, Sensing sensing, bool HealthZone)
     {
         List<GameObject> objects = sensing.GetCollectablesInView();
@@ -289,7 +296,7 @@ public class Actions
 
     }
 
-
+    // a function that allows the enemy to move towards the powerup if they see it and if they are within range they will be able to use the power up 
     public bool FindPowerUp(Sensing sense, AgentData data, AgentActions actions, bool PowerUpZone)
     {
 
@@ -325,7 +332,7 @@ public class Actions
         return true;
     }
 
-
+    // a function that checks all objects in view and trys to find all of them that are classified as an enemy
     public bool FindEnemyflag(Sensing sight, AgentData data)
     {
         //gets a list of the items within view
@@ -349,7 +356,7 @@ public class Actions
         return false;
     }
 
-
+    // a function that allows the Ai to be able to drop the flag when they are within thier base
     public bool DropItemAtBase(GameObject FriendlyBase, AI TheAi, AgentActions TheActions, bool flag)
     {
         if(TheAi.transform.position.x == FriendlyBase.transform.position.x  || TheAi.transform.position.y == FriendlyBase.transform.position.y)
@@ -362,6 +369,7 @@ public class Actions
         return true;
     }
 
+    //this is a function that looks for the flag and checks to see if it is within thier home base
     public bool CheckflagAtBase(Sensing sense, AgentData data, GameObject FriendBase)
     {
 
@@ -414,6 +422,7 @@ public class ActionBase
 
     AIGoals GoalItSatisfies;
 
+    // checks to see if the action is combinable
     public bool IsCombinalbleWith(ActionBase action)
     {
         if (CanCombine && action.CanCombine)
@@ -424,6 +433,7 @@ public class ActionBase
             return false;
     }
 
+    // sets the satisfaction value of this Action
     public void SetGoalSatisfaction(AIGoals goal, float value)
     {
         if (!GoalSatisfaction.ContainsKey(goal))
@@ -432,6 +442,7 @@ public class ActionBase
         }
     }
 
+    // returns the amount this action can satisfy a certain goal
     public float EvaluateGoalSatisfaction(AIGoals TypeToCheck)
     {
         if (GoalSatisfaction.ContainsKey(TypeToCheck))
@@ -447,12 +458,14 @@ public class ActionBase
     //
     //}
 
+    // resets a timer
     public virtual void Reset()
     {
         Complete = false;
         timer = 0.0f;
     }
 
+    // returns if this action is interuptable
     public bool IsInteruptable()
     {
         return Interupt;
@@ -489,6 +502,7 @@ public class ActionSequence : ActionBase
         }
     }
 
+    //executes all actions contained within the actoin sequence list
     public void Execute(AI TheAI)
     {
         foreach(TheAction A in actionlist)
@@ -498,16 +512,19 @@ public class ActionSequence : ActionBase
         }
     }
 
+    //adds an action to the list
     public void AddAction(TheAction action)
     {
         actionlist.Add(action);
     }
 
+    //sets what action it is currently using
     public void SetCurrentAction(TheAction Action)
     {
         CurrentAction =  Action;
     }
 
+    //returns the current action
     public TheAction ReturnCurrentAction()
     {
         return CurrentAction;
@@ -519,17 +536,22 @@ public class ActionSequence : ActionBase
 //action class 
 public class TheAction : ActionBase
 {
+    //is it interuptable
     private bool Interuptable;
 
+    //is it combinable
     private bool Combinable;
 
+    // is this the first actioin that will be executed in a list
     public bool first;
 
+    // how long it takes to expire
     float ExpireyTime;
 
     // to determine what action to do
     private string ActionName;
 
+    //has the action been complete
     private bool complete = false;
 
     //gives acess to the actoin class
@@ -552,7 +574,7 @@ public class TheAction : ActionBase
 
     //parameters
     //Param 1 : is the Ai script as it needs acess to the sensing data and AI data
-
+    // this is a function that depending on the name of the function and the action that has been given in determines what set of actions or action it needs to used when the action sequence execute is called
     public void Execute(AI TheAi)
     {
         if (!complete)

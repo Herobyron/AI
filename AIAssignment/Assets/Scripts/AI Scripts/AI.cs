@@ -99,29 +99,37 @@ public class AI : MonoBehaviour
     public GameObject EnemyBase;
     public GameObject HomeBase;
     public GameObject HealthZone;
-
-    public int GuardspotNumber = 1;
     public GameObject FriendlyGuardSpotOne;
     public GameObject FreindlyGuardSpotTwo;
 
+    // the current guard spot the AI is at
+    public int GuardspotNumber = 1;
+    
+    // do they posses any of the flags
     public bool GotEnemyflag = false;
     public bool GotFriendlyFlag = false;
 
+    //check to see if this is the starting action
     public bool Startcheck = false;
 
+    //have the retreated
     public bool Retreated;
 
+    //do they need health
     public bool NeedsHealth = false;
 
+    //are they at a specific zone on the map
     public bool AtHealthZone = false;
     public bool AtPowerUpZone = false;
 
+    // do they have a powerup
     public bool PoweringUp = false;
-
+    //are they following 
     public bool Follow = false; 
 
-
+    //THe actions class (the class that holds the actions they can do like move to)
     Actions TheActions = new Actions();
+
 
     //the Actions for the first Goal GoPickUpFlag
     TheAction CaptureFlagMove;
@@ -165,6 +173,7 @@ public class AI : MonoBehaviour
     UtilityAI TheAI = new UtilityAI();
     void Awake()
     {
+        //this determines what team they are on and then sets thier home base depending on this
         if (this.CompareTag("Blue Team"))
         {
             HomeBase = GameObject.FindGameObjectWithTag("BlueBase");
@@ -173,11 +182,13 @@ public class AI : MonoBehaviour
         {
             HomeBase = GameObject.FindGameObjectWithTag("RedBase");
         }
+
+
         ///////////////////////////////////////////
         //goal One go get Flag and Bring it back//
         Goals GoPickUpFlag = new Goals(AIGoals.CaptureFlag, 0.0f, 10.0f, 0.0f, Valuefunctions);
 
-        //actions included within the goal
+        //actions included within the first goal
         CaptureFlagMove = new TheAction(TheActions, "MoveEnemySide", true, true, 0.0f, true);
         CaptureFlagMove.SetGoalSatisfaction(AIGoals.CaptureFlag, 1);
 
@@ -352,9 +363,12 @@ public class AI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //makes sure the goals are not being added to 
         ResetAllGoals();
+        //function to check health
         CheckHealth();
 
+        // if the AI is close to the power up. update the utility of the AI 
         if (_agentSenses.GetObjectInViewByName("Power Up"))
         {
             TheAI.UpdateGoalValue(AIGoals.PowerUp, 10);
@@ -362,43 +376,52 @@ public class AI : MonoBehaviour
         }
         else
         {
+            // if not update the Utility of the Ai again for a differnt goals
             CheckEnemyflag();
             TheAI.UpdateGoalValue(AIGoals.PowerUp, -10);
         }
         
+        //final update depending on what flags they have captured
         if (!NeedsHealth)
         {
             
             CheckEnemyflag();
         }
 
+        //depending on the utility value of each of the actions pick one that satifys the highest goal
         ActionSequence CurrentAction = TheAI.ChooseAction();
         CurrentAction.Execute(this);
         
         Startcheck = true;
     }
 
+    // a function to return the agents data
     public AgentData GetData()
     {
         return _agentData;
     }
 
+    //function to return the agents actions
     public AgentActions GetActions()
     {
         return _agentActions;
     }
 
+    //function to return the agents senses
     public Sensing GetSensing()
     {
         return _agentSenses;
     }
 
+    //a function to return the agents inventory
     public InventoryController GetInventory()
     {
         return _agentInventory;
     }
 
-
+    // this is no longer used. 
+    // but what id does it checks all allies by the AI and then checks to see if any of them are carrying the flag 
+    // if they are then they will follow 
     public void CheckTeamMates()
     {
             ResetAllGoals();
@@ -503,7 +526,7 @@ public class AI : MonoBehaviour
 
     }
 
-
+    // resets all of the goals to the begining 
     public void ResetAllGoals()
     {
         TheAI.UpdateGoalValue(AIGoals.CaptureFlag, -10);

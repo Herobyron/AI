@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class UtilityAI 
 {
+
+    // a list of action seqences for the differnt goals
     public List<ActionSequence> actionlist = new List<ActionSequence>();
 
+    // a list of goals for the Ai to complete
     public List<Goals> goallist = new List<Goals>();
 
     //adds a goal to the existing list of goals
@@ -45,6 +48,7 @@ public class UtilityAI
         }
     }
 
+    // a function that chooses the action depending on what goal needs to be satified the most
     public ActionSequence ChooseAction()
     {
         //this will be the goal that has the maximum utility (so is the highest on the list)

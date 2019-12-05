@@ -16,6 +16,7 @@ public class HealthZoneScript : MonoBehaviour
         
     }
 
+    // this is a trigger zone to determine if any of the Ai are within the area of the health kit
     public void OnTriggerEnter(Collider other)
     {
         if(other.CompareTag("Blue Team"))

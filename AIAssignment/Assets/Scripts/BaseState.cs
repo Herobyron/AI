@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BaseState : MonoBehaviour
 {
+    // two bools to determine if the base currently has either the blue or red flag
     public bool HasBlueFlag;
     public bool HasRedFlag;
 
@@ -20,6 +21,7 @@ public class BaseState : MonoBehaviour
         
     }
 
+    //checks to see when the base has one of the flags it sets them to true
     private void OnTriggerStay(Collider other)
     {
         if(other.name == "Blue Flag")
@@ -33,6 +35,7 @@ public class BaseState : MonoBehaviour
         }
     }
 
+    // upon a flag exiting the base it will change the bools so that they are false
     private void OnTriggerExit(Collider other)
     {
         if (other.name == "Blue Flag")

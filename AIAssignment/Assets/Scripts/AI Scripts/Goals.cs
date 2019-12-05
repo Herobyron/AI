@@ -17,10 +17,10 @@ public class Goals
     // this is the class to determine how much value the goal gives towards the utiltiy
     GoalValuefunction UtilityValue;
 
-
+    // the type of goal this one is
     AIGoals goaltype;
 
-    // the goal to achieve
+    // the goal to achieve (constructor)
     public Goals(AIGoals type, float goalvaluemin, float goalvaluemax, float currentvalue, GoalValuefunction utilityfunction)
     {
         goaltype = type;
@@ -31,27 +31,31 @@ public class Goals
         UtilityValue = utilityfunction;
     }
 
+    //sets the goals utility value
     public void SetValue(float value)
     {
         Gvalue = value;
     }
 
+    //removes a set amount of utility value from the on going goal
     public void SubtractValue(float val)
     {
         Gvalue -= val;
     }
 
+    // returns the goals utilty value
     public float GetValue()
     {
         return Gvalue;
     }
 
+    //returns the goals utlity value 
     public float Utility()
     {
         return UtilityValue.Linear(MinimumGoalValue, MaximumGoalValue, Gvalue);
     }
 
-
+    //returns the goals type
     public AIGoals TypeReturn()
     {
         return goaltype;
